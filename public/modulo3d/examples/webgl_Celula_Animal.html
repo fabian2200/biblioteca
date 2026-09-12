@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Célula Animal</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<link type="text/css" rel="stylesheet" href="main.css">
+	<link href="../bootstrap/bootstrap.min.css" rel="stylesheet">
+	<!-- Bootstrap JS (requerido para modales) -->
+	<script src="../bootstrap/bootstrap.bundle.min.js"></script>
+	<link rel="stylesheet" href="../bootstrap/style.css" />
+	<script src="../jquery-3.7.1.min.js"></script>
+	<link rel="stylesheet" href="../fontawesome/css/all.min.css">
+
+	<link rel="stylesheet" href="./css/index.css">
+	</style>
+</head>
+
+<body>
+
+	<div id="labels-container"></div>
+
+	<!-- Controls display for spaceship view -->
+	<div id="spaceship-controls" class="controls-display">
+		<div class="controls-title">Controles de la Nave:</div>
+		<div class="controls-container">
+			<div class="control-item">
+				<span class="key-symbol">W</span> Adelante
+			</div>
+			<div class="control-item"><span class="key-symbol">S</span> Atrás</div>
+			<div class="control-item">
+				<span class="key-symbol">A</span> Izquierda
+			</div>
+			<div class="control-item">
+				<span class="key-symbol">D</span> Derecha
+			</div>
+			<div class="control-item"><span class="key-symbol">Q</span> Arriba</div>
+			<div class="control-item"><span class="key-symbol">E</span> Abajo</div>
+			<div class="control-item">
+				<span class="key-symbol">⬆️⬇️⬅️➡️</span> Rotar
+			</div>
+		</div>
+	</div>
+
+	<!-- Controls display for system view -->
+	<div id="system-controls" class="controls-display">
+		<div class="controls-title">Controles del Sistema:</div>
+		<div class="control-item">
+			<span class="key-symbol">🖱️</span> Click izquierdo + Arrastrar para rotar cámara
+		</div>
+		<div class="control-item">
+			<span class="key-symbol">🖱️</span> Click derecho + arrastrar para mover el Modelo
+		</div>
+	</div>
+
+	
+	<div id="miModal" class="modal-flotante">
+		<div class="d-flex justify-content-end align-items-center gap-3" id="botones-modal">
+			<span id="boton-hablar" ><i class="fa-solid fa-volume-high"></i></span>
+			<span class="cerrar-modal" id="cerrar-modal"><i style="color: red; font-size: 40px;" class="fa-solid fa-xmark"></i></span>
+		</div>
+        <!-- Botones de las Pestañas -->
+		<h3 id="modal-nombre-texto">Cargando...</h3>
+        <div class="pestanas-container">
+            <button class="btn-pestana activa" onclick="cambiarPestana(event, 'tab-descripcion')">Descripción</button>
+            <button class="btn-pestana" onclick="cambiarPestana(event, 'tab-funciones')">Funciones</button>
+        </div>
+    
+        <div id="tab-descripcion" class="contenido-pestana activa">
+            <p id="modal-descripcion-texto">Cargando...</p>
+        </div>
+        <div id="tab-funciones" class="contenido-pestana">
+            <p id="modal-funciones-texto">Cargando...</p>
+        </div>
+    </div>
+
+	<div id="loading-container">
+		<div class="loading-container-content">
+			<div id="loading-text">Cargando modelo</div>
+			<div class="contenedor" style="position: relative;">
+				<span id="barra-text">0%</span>
+				<div id="barra" class="barra">
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="container"></div>
+
+	
+	<div class="info">Modelo 3D de la Célula Animal</div>
+	
+
+	<script type="importmap">
+		{
+			"imports": {
+				"three": "../build/three.module.js",
+				"three/addons/": "./jsm/"
+			}
+		}
+	</script>
+
+	<script src="./js/index.js"></script>
+
+	<script type="module">
+
+		import * as THREE from 'three';
+		import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+		import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+		import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+		let scene, camera, renderer, controls;
+
+		// Inicializar escena
+		scene = new THREE.Scene();
+		scene.background = new THREE.Color(0x222222);
+
+		// Cámara
+		camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
+		camera.position.set(-300, 150, 600);
+		camera.updateProjectionMatrix();
+
+		// Renderizador
+		renderer = new THREE.WebGLRenderer({ antialias: true });
+		renderer.setSize(window.innerWidth, window.innerHeight);
+		document.body.appendChild(renderer.domElement);
+
+		// Controles orbitales
+		controls = new OrbitControls(camera, renderer.domElement);
+		const distanciaInicial = camera.position.length();
+
+		controls.maxDistance = distanciaInicial;
+		controls.minDistance = 500;
+		// Luz
+		const light = new THREE.HemisphereLight(0xffffff, 0x444444, 2.0); // el tercer parámetro es la intensidad
+		light.position.set(-120, 120, 120);
+		scene.add(light);
+
+		// Cargar modelo GLB
+		const loader = new GLTFLoader();
+		const raycaster = new THREE.Raycaster();
+		const mouse = new THREE.Vector2();
+		const objetosClickeables = []; // Aquí guardarás los nodos (meshes)
+		let objetoSeleccionado = null;
+		let colorOriginal = null;
+
+
+		const partesCelulaAnimal = [
+			{
+				id: "Nulo__Material_0",
+				nombre: "Membrana celular",
+				funcion: "Controla lo que entra y sale de la célula",
+				descripcion: "Es una estructura delgada que rodea toda la célula, formada principalmente por una bicapa lipídica. Regula el intercambio de sustancias con el exterior y protege el contenido celular."
+			},
+			{
+				id: "citoplasma_remesh_Material004_0",
+				nombre: "Citoplasma",
+				funcion: "Sostiene los orgánulos celulares",
+				descripcion: "Es el material gelatinoso que llena el interior de la célula. En él se encuentran suspendidos todos los orgánulos y se llevan a cabo muchas reacciones químicas necesarias para la vida celular."
+			},
+			{
+				id: "Nulo__Material001_0",
+				nombre: "Núcleo",
+				funcion: "Contiene el material genético (ADN)",
+				descripcion: "Es el orgánulo más importante de la célula. Controla todas las actividades celulares y contiene la información genética necesaria para la reproducción y el funcionamiento celular."
+			},
+			{
+				id: "Nulo__Material009_0",
+				nombre: "Nucleolo",
+				funcion: "Produce ribosomas",
+				descripcion: "Se encuentra dentro del núcleo y se encarga de fabricar las subunidades ribosómicas a partir del ARN y proteínas."
+			},
+			{
+				id: "Nulo__Material005_0",
+				nombre: "Retículo endoplasmático",
+				funcion: "Síntesis, almacenamiento y transporte de lípidos: el retículo endoplasmático liso es responsable de la síntesis de una amplia variedad de lípidos, como el colesterol, los fosfolípidos y los glucolípidos, que son componentes esenciales de las membranas celulares. También almacena y transporta lípidos hacia otras partes de la célula.",
+				descripcion: "A diferencia del retículo endoplasmático rugoso (su homólogo), el retículo endoplasmático liso no tiene ribosomas unidos a sus membranas, lo cual le confiere su denominación de 'liso'. Debido a esta ausencia de ribosomas, las proteínas presentes en este orgánulo tienen su origen en el retículo endoplasmático rugoso."
+			},
+			{
+				id: "Nulo__Material006_0",
+				nombre: "Aparato de Golgi",
+				funcion: "Empaque y distribución de proteínas y lípidos",
+				descripcion: "Recibe proteínas y lípidos del retículo endoplasmático, los modifica, los empaqueta en vesículas y los envía a su destino final dentro o fuera de la célula."
+			},
+			{
+				id: "Nulo__Material008_0",
+				nombre: "Mitocondrias",
+				funcion: "Producción de energía",
+				descripcion: "Son los orgánulos encargados de generar la mayor parte del ATP, la principal fuente de energía celular, mediante la respiración celular."
+			},
+			{
+				id: "Nulo__Material025_0006",
+				nombre: "Lisosomas",
+				funcion: "Digestión celular",
+				descripcion: "Contienen enzimas que degradan desechos, orgánulos dañados y otras sustancias. Son fundamentales en la limpieza interna de la célula."
+			},
+			{
+				id: "Nulo__Material025_0580",
+				nombre: "Centrosoma y centriolos",
+				funcion: "Organización del citoesqueleto y división celular",
+				descripcion: "Participan en la organización de los microtúbulos y son esenciales durante el proceso de mitosis para la correcta separación de los cromosomas."
+			},
+			{
+				id: "Nulo__Material018_0",
+				nombre: "Ribosomas",
+				funcion: "Síntesis de proteínas",
+				descripcion: "Son complejos de ARN y proteínas que se encuentran libres en el citoplasma o adheridos al retículo rugoso. Traducen el ARN mensajero para formar proteínas."
+			},
+			{
+				id: "Nulo__Material1_0",
+				nombre: "Vacuolas",
+				funcion: "Almacenamiento y transporte de sustancias",
+				descripcion: "Son estructuras membranosas que almacenan agua, nutrientes, productos de desecho y otras sustancias. En las células animales suelen ser pequeñas y numerosas, y participan también en la digestión intracelular y el equilibrio osmótico."
+			},
+			{
+				id: "Nulo__Material025_0014",
+				nombre: "Centriolos",
+				funcion: "División celular",
+				descripcion: "Son pequeñas estructuras cilíndricas que se encuentran en el núcleo celular. Son esenciales para la mitosis y la meiosis, y participan en la organización del citoesqueleto."
+			},
+			{
+				id: "Nulo__Material026_0",
+				nombre: "Centrosoma",
+				funcion: "Organización del citoesqueleto y división celular",
+				descripcion: "Participan en la organización de los microtúbulos y son esenciales durante el proceso de mitosis para la correcta separación de los cromosomas."
+			}
+		];
+
+		let modeloCelulaAnimal = null;
+		loader.load(
+			'models/mios/celula-animal.glb',
+			function (gltf) {
+				modeloCelulaAnimal = gltf.scene;
+				modeloCelulaAnimal.position.set(-100, -250, 0);
+				modeloCelulaAnimal.scale.set(9.7, 9.7, 9.7);
+				scene.add(modeloCelulaAnimal);
+
+				modeloCelulaAnimal.traverse((child) => {
+					if (child.isMesh) {
+						child.material = child.material.clone();
+						child.materialOriginal = child.material.clone();
+						objetosClickeables.push(child);
+						console.log("Nodo encontrado:", child.name);
+					} 
+				});
+			},
+			function (xhr) {
+				document.getElementById('barra').style.width = (xhr.loaded / xhr.total * 100) + '%';
+				document.getElementById('barra-text').innerHTML = (xhr.loaded / xhr.total * 100).toFixed(2) + '%';	
+				if (xhr.loaded === xhr.total) {
+					setTimeout(() => {
+						document.getElementById('loading-container').style.display = 'none';
+						console.log(objetosClickeables);
+					}, 2000);	
+				}
+			},
+			function (error) {
+				console.error('Error al cargar el modelo .glb', error);
+			}
+		);
+
+
+		// Animación
+		function animate() {
+			requestAnimationFrame(animate);
+			controls.update();
+			actualizarModal();
+			renderer.render(scene, camera);
+		}
+		animate();
+
+		// Resize responsive
+		window.addEventListener('resize', () => {
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+		});
+
+
+		window.addEventListener('click', (event) => {
+			// Si el clic fue dentro del modal, salir
+			if (event.target.closest('.modal-flotante')) {
+				return;
+			}
+
+			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+			mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+			raycaster.setFromCamera(mouse, camera);
+
+			const intersects = raycaster.intersectObjects(objetosClickeables, true);
+
+			if (intersects.length > 0) {
+				const objetoActual = intersects[0].object;
+
+				// Si hay un objeto seleccionado anteriormente, restaurar su color
+				if (objetoSeleccionado){
+					objetoSeleccionado.material = objetoSeleccionado.materialOriginal.clone();
+				}
+
+				// Guardar el nuevo objeto seleccionado
+				objetoSeleccionado = objetoActual;
+				window.speechSynthesis.cancel();
+				// Guardar el color original solo si es un nuevo objeto
+				colorOriginal = objetoActual.materialOriginal.clone();
+				objetoActual.material.color.set(0xff0000);
+                posicionarModalEnPunto();
+				tooltip.style.display = 'none';
+			}
+		});
+
+		$('#cerrar-modal').click(function() {
+			window.speechSynthesis.cancel();
+			document.getElementById('miModal').style.display = 'none';
+			if (objetoSeleccionado){
+				objetoSeleccionado.material = objetoSeleccionado.materialOriginal.clone();
+			}
+		});
+
+		function posicionarModalEnPunto() {
+            if (!objetoSeleccionado) return;
+
+            const wp = new THREE.Vector3();
+
+            // Obtener posición global del objeto
+            objetoSeleccionado.getWorldPosition(wp);
+
+            // Convertir a coordenadas de pantalla
+            wp.project(camera);
+
+            const x = (wp.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-wp.y * 0.5 + 0.5) * window.innerHeight;
+
+            const modal = document.getElementById('miModal');
+
+            modal.style.position = 'absolute';
+            modal.style.left = `${x - modal.offsetWidth / 2}px`;
+			modal.style.top = `${y - modal.offsetHeight - 20}px`;
+
+            var info = null;
+            info = partesCelulaAnimal.find(parte => parte.id === objetoSeleccionado.name);
+			if (info) {
+				modal.style.display = 'block';
+				document.getElementById('modal-nombre-texto').innerHTML = info.nombre;
+                document.getElementById('modal-descripcion-texto').innerHTML = info.descripcion;
+                document.getElementById('modal-funciones-texto').innerHTML = info.funcion;
+            } else {
+                modal.style.display = 'none';
+				document.getElementById('modal-nombre-texto').innerHTML = '';
+				document.getElementById('modal-descripcion-texto').innerHTML = '';
+				document.getElementById('modal-funciones-texto').innerHTML = '';
+            }
+        }
+
+		function actualizarModal() {
+            if (!objetoSeleccionado) return;
+            // Posición mundial del objeto
+            const posicion = new THREE.Vector3();
+            objetoSeleccionado.getWorldPosition(posicion);
+
+            // Convertir a coordenadas de pantalla
+            posicion.project(camera);
+
+            const x = (posicion.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-posicion.y * 0.5 + 0.5) * window.innerHeight;
+
+            const modal = document.getElementById('miModal');
+            modal.style.left = `${x}px`;
+            modal.style.top = `${y}px`;
+        }
+
+        
+        let objetoHover = null;
+		var tooltip = null;
+		let materialOriginal = null;
+		window.addEventListener('mousemove', (event) => {
+			//verificar si el color es rojo
+			
+			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+			mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+			raycaster.setFromCamera(mouse, camera);
+
+			const intersects = raycaster.intersectObjects(
+				objetosClickeables,
+				true
+			);
+
+			if (!tooltip) {
+				tooltip = document.createElement('div');
+				tooltip.id = 'tooltip';
+				document.body.appendChild(tooltip);
+			}
+
+			if (intersects.length > 0) {
+				const objeto = intersects[0].object;
+				const info = partesCelulaAnimal.find(
+					parte => parte.id === objeto.name
+				);
+
+				// Si cambió de objeto
+				if (objetoHover !== objeto) {
+					// Restaurar color anterior
+					if (objetoHover && materialOriginal) {
+						if(objetoHover.material.color.getHex() != 0xff0000){
+							objetoHover.material.color.copy(materialOriginal);
+						}
+					}
+					// Guardar color original
+					objetoHover = objeto;
+					materialOriginal = objeto.material.color.clone();
+					// Aplicar gris
+					objeto.material.color.set(0xaaaaaa);
+					tooltip.innerHTML = info?.nombre?.toUpperCase();
+				}
+
+				if(info){
+					tooltip.style.display = 'block';
+					tooltip.style.left = (event.clientX + 15) + 'px';
+					tooltip.style.top = (event.clientY + 15) + 'px';
+				}else{
+					tooltip.style.display = 'none';
+				}
+			} else {
+				// Restaurar último objeto
+				if (objetoHover && materialOriginal ) {
+					if(objetoHover.material.color.getHex() != 0xff0000){
+						objetoHover.material.color.copy(materialOriginal);
+					}
+				}
+				objetoHover = null;
+				materialOriginal = null;
+				tooltip.style.display = 'none';
+			}
+		});
+
+		const emularScroll = (factor) => {
+			const direccion = new THREE.Vector3();
+			direccion.subVectors(camera.position, controls.target).normalize(); // Dirección de la cámara
+
+			// Calcular nueva posición
+			const nuevaPosicion = camera.position.clone().addScaledVector(direccion, factor);
+
+			// Calcular la nueva distancia a target
+			const distancia = nuevaPosicion.distanceTo(controls.target);
+			console.log(distancia);
+
+			if (factor > 0) {
+				if (distancia < 737) {
+					camera.position.copy(nuevaPosicion);
+					controls.update();
+				}
+			} else {
+				if (distancia > 500) {
+					camera.position.copy(nuevaPosicion);
+					controls.update();
+				}
+			}
+		};
+
+
+		const controlesMovimiento = {
+			acercar: () => emularScroll(-50),
+			alejar: () => emularScroll(50),
+		};
+
+		const controlesRotacion = {
+			rotarY: () => { if (modeloCelulaAnimal) modeloCelulaAnimal.rotation.y += 0.1; },
+			rotarY_neg: () => { if (modeloCelulaAnimal) modeloCelulaAnimal.rotation.y -= 0.1; },
+		};
+
+		const moverCamara = {
+			arriba: () => { camera.position.y += 20; controls.target.y += 20; controls.update(); },
+			abajo: () => { camera.position.y -= 20; controls.target.y -= 20; controls.update(); },
+			izquierda: () => { camera.position.x -= 20; controls.target.x -= 20; controls.update(); },
+			derecha: () => { camera.position.x += 20; controls.target.x += 20; controls.update(); },
+			adelante: () => { camera.position.z -= 20; controls.target.z -= 20; controls.update(); },
+			atras: () => { camera.position.z += 20; controls.target.z += 20; controls.update(); },
+		};
+
+		const gui = new GUI();
+
+		const carpetaMovimiento = gui.addFolder('Mover cámara');
+		carpetaMovimiento.add(controlesMovimiento, 'acercar').name('Acercar <i class="fa-solid fa-plus"></i>');
+		carpetaMovimiento.add(controlesMovimiento, 'alejar').name('Alejar <i class="fa-solid fa-minus"></i>');
+
+		carpetaMovimiento.open();
+
+		const carpetaRotacion = gui.addFolder('Rotar modelo');
+
+		carpetaRotacion.add(controlesRotacion, 'rotarY').name('<i class="fa-solid fa-arrow-left"></i> Rotar');
+		carpetaRotacion.add(controlesRotacion, 'rotarY_neg').name('<i class="fa-solid fa-arrow-right"></i> Rotar');
+
+		carpetaRotacion.open();
+
+		const carpetaMover = gui.addFolder('Mover cámara libre');
+		carpetaMover.add(moverCamara, 'arriba').name('Arriba <i class="fa-solid fa-arrow-up"></i>');
+		carpetaMover.add(moverCamara, 'abajo').name('Abajo <i class="fa-solid fa-arrow-down"></i>');
+		carpetaMover.add(moverCamara, 'izquierda').name('Izquierda <i class="fa-solid fa-arrow-left"></i>');
+		carpetaMover.add(moverCamara, 'derecha').name('Derecha <i class="fa-solid fa-arrow-right"></i>');
+		carpetaMover.add(moverCamara, 'adelante').name('Adelante <i class="fa-solid fa-arrow-up"></i>');
+		carpetaMover.add(moverCamara, 'atras').name('Atrás <i class="fa-solid fa-arrow-down"></i>');
+
+		carpetaMover.open();
+
+		setTimeout(() => {
+			document.getElementsByClassName('title')[0].innerHTML = 'Controles del sistema';
+		}, 500);
+
+		const loaderFondo = new THREE.TextureLoader();
+			loaderFondo.load('images_celula/fondo.png', function (texture) {
+			texture.encoding = THREE.sRGBEncoding; // asegura colores reales
+			texture.colorSpace = THREE.SRGBColorSpace; // si usas Three.js r152+
+			scene.background = texture;
+		});
+
+
+	
+
+		document.addEventListener('mousedown', () => {
+		  document.body.classList.add('grabbing');
+		});
+	  
+		document.addEventListener('mouseup', () => {
+		  document.body.classList.remove('grabbing');
+		});
+	  
+		// Por si se suelta el clic fuera del navegador
+		document.addEventListener('mouseleave', () => {
+		  document.body.classList.remove('grabbing');
+		});
+	</script>
+</body>
+</html>

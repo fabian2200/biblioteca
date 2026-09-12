@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Modelo 3D del sistema digestivo</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link type="text/css" rel="stylesheet" href="main.css">
+    <link href="../bootstrap/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap JS (requerido para modales) -->
+    <script src="../bootstrap/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="../bootstrap/style.css" />
+    <link rel="stylesheet" href="../fontawesome/css/all.min.css">
+    <script src="../jquery-3.7.1.min.js"></script>
+    <link rel="stylesheet" href="./css/index.css">
+</head>
+
+<body>
+
+    <div id="labels-container"></div>
+
+    <!-- Controls display for spaceship view -->
+    <div id="spaceship-controls" class="controls-display">
+        <div class="controls-title">Controles de la Nave:</div>
+        <div class="controls-container">
+            <div class="control-item">
+                <span class="key-symbol">W</span> Adelante
+            </div>
+            <div class="control-item"><span class="key-symbol">S</span> Atrás</div>
+            <div class="control-item">
+                <span class="key-symbol">A</span> Izquierda
+            </div>
+            <div class="control-item">
+                <span class="key-symbol">D</span> Derecha
+            </div>
+            <div class="control-item"><span class="key-symbol">Q</span> Arriba</div>
+            <div class="control-item"><span class="key-symbol">E</span> Abajo</div>
+            <div class="control-item">
+                <span class="key-symbol">⬆️⬇️⬅️➡️</span> Rotar
+            </div>
+        </div>
+    </div>
+
+     <!-- Controls display for system view -->
+	<div id="system-controls" class="controls-display">
+		<div class="controls-title">Controles del Sistema:</div>
+		<div class="control-item">
+			<span class="key-symbol">🖱️</span> Click izquierdo + Arrastrar para rotar cámara
+		</div>
+		<div class="control-item">
+			<span class="key-symbol">🖱️</span> Click derecho + arrastrar para mover el Modelo
+		</div>
+	</div>
+
+    <div id="miModal" class="modal-flotante">
+        <div class="d-flex justify-content-end align-items-center gap-3" id="botones-modal">
+			<span id="boton-hablar" ><i class="fa-solid fa-volume-high"></i></span>
+			<span class="cerrar-modal" id="cerrar-modal"><i style="color: red; font-size: 40px;" class="fa-solid fa-xmark"></i></span>
+		</div>
+        <h3 id="modal-nombre-texto">Cargando...</h3>
+        <!-- Botones de las Pestañas -->
+        <div class="pestanas-container">
+            <button class="btn-pestana activa" onclick="cambiarPestana(event, 'tab-descripcion')">Descripción</button>
+            <button class="btn-pestana" onclick="cambiarPestana(event, 'tab-funciones')">Funciones</button>
+        </div>
+    
+        <div id="tab-descripcion" class="contenido-pestana activa">
+            <p id="modal-descripcion-texto">Cargando...</p>
+        </div>
+        <div id="tab-funciones" class="contenido-pestana">
+            <p id="modal-funciones-texto">Cargando...</p>
+        </div>
+    </div>
+
+    <div id="container"></div>
+
+    <div id="loading-container">
+        <div class="loading-container-content">
+            <div id="loading-text">Cargando modelo</div>
+            <div class="contenedor" style="position: relative;">
+                <span id="barra-text">0%</span>
+                <div id="barra" class="barra">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info" style="font-size: 18px; padding: 8px;">Partes del Ojo</div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "../build/three.module.js",
+                "three/addons/": "./jsm/"
+            }
+        }
+    </script>
+    <script src="./js/index.js"></script>
+
+    <script type="module">
+
+        var partesOjo = [
+            {
+				id: "eye_sphere_outside_Mat2_0",
+				nombre: "esclerótica",
+				descripcion: "<p>La esclerótica es la capa externa del ojo. Es una capa dura y transparente que protege el ojo y ayuda a mantener su forma.</p>",
+                funciones: "Protege el ojo y ayuda a mantener su forma."
+			},
+            {
+				id: "eye_sphere_inside_ojo_0",
+				nombre: "retina",
+				descripcion: "<p>La retina es la capa interna del ojo. Es una capa nerviosa que transforma la luz en impulsos nerviosos. Es la parte del ojo que ve.</p>",
+                funciones: "Transforma la luz en impulsos nerviosos. Vea."
+			},
+            {
+				id: "half_veins_defaultMat_0",
+				nombre: "coroides",
+				descripcion: "<p>La coroides es la capa intermedia del ojo. Es una capa nerviosa que transforma la luz en impulsos nerviosos. Es la parte del ojo que ve.</p>",
+                funciones: "Transforma la luz en impulsos nerviosos. Vea."
+			},
+            {
+				id: "eye_over_cornea_Mat1_0",
+				nombre: "córnea",
+				descripcion: "<p>La córnea es la capa externa del ojo. Es una capa dura y transparente que protege el ojo y ayuda a mantener su forma.</p>",
+                funciones: "Protege el ojo y ayuda a mantener su forma."
+			},
+            {
+				id: "cornea_outside_Mat6_0",
+				nombre: "iris",
+				descripcion: "<p>La iris es la capa interna del ojo. Es una capa nerviosa que transforma la luz en impulsos nerviosos. Es la parte del ojo que ve.</p>",
+                funciones: "Transforma la luz en impulsos nerviosos. Vea."
+			},
+            {
+				id: "cornea_inside_Mat6_0",
+				nombre: "cuerpo ciliar",
+				descripcion: "<p>El cuerpo ciliar es la capa interna del ojo. Es una capa nerviosa que transforma la luz en impulsos nerviosos. Es la parte del ojo que ve.</p>",
+                funciones: "Transforma la luz en impulsos nerviosos. Vea."
+			},
+            {
+				id: "lens_Mat1_0",
+				nombre: "cristalino",
+				descripcion: "<p>El cristalino es la capa interna del ojo. Es una capa nerviosa que transforma la luz en impulsos nerviosos. Es la parte del ojo que ve.</p>",
+                funciones: "Transforma la luz en impulsos nerviosos. Vea."
+			},
+            {
+				id: "muscle_4_Mat7_0",
+				nombre: "musculo oblicuo menor",
+				descripcion: "<p>El musculo oblicuo menor es la capa interna del ojo. Es una capa nerviosa que transforma la luz en impulsos nerviosos. Es la parte del ojo que ve.</p>",
+                funciones: "Transforma la luz en impulsos nerviosos. Vea."
+			},
+            {
+				id: "muscle_5_Mat7_0",
+				nombre: "musculo recto inferior",
+				descripcion: "<p>El musculo recto inferior es la capa interna del ojo. Es una capa nerviosa que transforma la luz en impulsos nerviosos. Es la parte del ojo que ve.</p>",
+                funciones: "Transforma la luz en impulsos nerviosos. Vea."
+			},
+            {
+				id: "muscle_3_Mat7_0",
+				nombre: "musculo recto superior",
+				descripcion: "<p>El musculo recto superior es la capa interna del ojo. Es una capa nerviosa que transforma la luz en impulsos nerviosos. Es la parte del ojo que ve.</p>",
+                funciones: "Transforma la luz en impulsos nerviosos. Vea."
+			},
+            {
+				id: "muscle_0_Mat7_0",
+				nombre: "musculo oblicuo mayor",
+				descripcion: "<p>El musculo oblicuo mayor es la capa interna del ojo. Es una capa nerviosa que transforma la luz en impulsos nerviosos. Es la parte del ojo que ve.</p>",
+                funciones: "Transforma la luz en impulsos nerviosos. Vea."
+			},
+            {
+				id: "muscle_6_Mat7_0",
+				nombre: "musculo recto interno",
+				descripcion: "<p>El musculo recto interno es la capa interna del ojo. Es una capa nerviosa que transforma la luz en impulsos nerviosos. Es la parte del ojo que ve.</p>",
+                funciones: "Transforma la luz en impulsos nerviosos. Vea."
+			},
+            {
+				id: "muscle_1_Mat7_0",
+				nombre: "musculo oblicuo externo",
+				descripcion: "<p>El musculo oblicuo externo es la capa interna del ojo. Es una capa nerviosa que transforma la luz en impulsos nerviosos. Es la parte del ojo que ve.</p>",
+                funciones: "Transforma la luz en impulsos nerviosos. Vea."
+			},
+            {
+				id: "nerv_element_4_Mat5_0",
+				nombre: "nervio optico",
+				descripcion: "<p>El nervio optico es la capa interna del ojo. Es una capa nerviosa que transforma la luz en impulsos nerviosos. Es la parte del ojo que ve.</p>",
+                funciones: "Transforma la luz en impulsos nerviosos. Vea."
+			},
+            {
+				id: "artery_retina_inside_1_defaultMat_0",
+				nombre: "Arteria central de la retina",
+				descripcion: "<p>La arteria central de la retina es la capa interna del ojo. Es una capa nerviosa que transforma la luz en impulsos nerviosos. Es la parte del ojo que ve.</p>",
+                funciones: "Transforma la luz en impulsos nerviosos. Vea."
+			},
+            {
+				id: "vein_up_Mat4_0",
+				nombre: "Vena central de la retina",
+				descripcion: "<p>La vena central de la retina es la capa interna del ojo. Es una capa nerviosa que transforma la luz en impulsos nerviosos. Es la parte del ojo que ve.</p>",
+                funciones: "Transforma la luz en impulsos nerviosos. Vea."
+			}
+        ];
+
+
+        import * as THREE from 'three';
+        import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+        let scene, camera, renderer, controls;
+
+        let mixer, action, clip;
+        let animationDuration = 0;
+        const clock = new THREE.Clock();
+
+
+        // Inicializar escena
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x222222);
+
+        // Cámara
+        camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 5000);
+        camera.position.set(50, -50, 750);
+        camera.updateProjectionMatrix();
+
+        // Renderizador
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Controles orbitales
+        controls = new OrbitControls(camera, renderer.domElement);
+        const distanciaInicial = camera.position.length();
+
+        controls.maxDistance = distanciaInicial;
+        controls.minDistance = 50;
+        // Luz
+        const light = new THREE.HemisphereLight(0xffffff, 0x444444, 4.0); // el tercer parámetro es la intensidad
+        light.position.set(-120, 120, 120);
+        scene.add(light);
+
+        // Cargar modelo GLB
+        const loader = new GLTFLoader();
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        const objetosClickeables = []; // Aquí guardarás los nodos (meshes)
+        let objetoSeleccionado = null;
+        let colorOriginal = null;
+
+        window.addEventListener('click', (event) => {
+            // Si el clic fue dentro del modal, salir
+            if (event.target.closest('.modal-flotante')) {
+                return;
+            }
+
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+
+            const intersects = raycaster.intersectObjects(objetosClickeables, true);
+
+            if (intersects.length > 0) {
+                const objeto = intersects[0].object;
+                const info = partesOjo.find(parte => parte.id === objeto.name);
+
+                if (objetoSeleccionado){
+                    objetoSeleccionado.material = objetoSeleccionado.materialOriginal.clone();
+                }
+
+                // Guardar el nuevo objeto seleccionado
+                objetoSeleccionado = objeto;
+                window.speechSynthesis.cancel();
+                // Guardar el color original solo si es un nuevo objeto
+                colorOriginal = objeto.materialOriginal.clone();
+                objeto.material.color.set(0xff0000);
+                posicionarModalEnPunto();
+                tooltip.style.display = 'none';
+            }
+        });
+
+        function posicionarModalEnPunto() {
+            if (!objetoSeleccionado) return;
+
+            const wp = new THREE.Vector3();
+
+            // Obtener posición global del objeto
+            objetoSeleccionado.getWorldPosition(wp);
+
+            // Convertir a coordenadas de pantalla
+            wp.project(camera);
+
+            const x = (wp.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-wp.y * 0.5 + 0.5) * window.innerHeight;
+
+            const modal = document.getElementById('miModal');
+
+            modal.style.display = 'block';
+            modal.style.position = 'absolute';
+            modal.style.left = `${x}px`;
+            modal.style.top = `${y}px`;
+
+            var info = null;
+            info = partesOjo.find(parte => parte.id === objetoSeleccionado.name);
+            document.getElementById('modal-nombre-texto').innerHTML = info.nombre;
+            document.getElementById('modal-descripcion-texto').innerHTML = info.descripcion;
+            document.getElementById('modal-funciones-texto').innerHTML = info.funciones;
+        }
+
+        function actualizarModal() {
+            if (!objetoSeleccionado) return;
+            // Posición mundial del objeto
+            const posicion = new THREE.Vector3();
+            objetoSeleccionado.getWorldPosition(posicion);
+
+            // Convertir a coordenadas de pantalla
+            posicion.project(camera);
+
+            const x = (posicion.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-posicion.y * 0.5 + 0.5) * window.innerHeight;
+
+            const modal = document.getElementById('miModal');
+            modal.style.left = `${x}px`;
+            modal.style.top = `${y}px`;
+        }
+
+        
+        let objetoHover = null;
+		var tooltip = null;
+		let materialOriginal = null;
+		window.addEventListener('mousemove', (event) => {
+			//verificar si el color es rojo
+			
+			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+			mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+			raycaster.setFromCamera(mouse, camera);
+
+			const intersects = raycaster.intersectObjects(
+				objetosClickeables,
+				true
+			);
+
+			if (!tooltip) {
+				tooltip = document.createElement('div');
+				tooltip.id = 'tooltip';
+				document.body.appendChild(tooltip);
+			}
+
+			if (intersects.length > 0) {
+				const objeto = intersects[0].object;
+				const info = partesOjo.find(
+					parte => parte.id === objeto.name
+				);
+
+				// Si cambió de objeto
+				if (objetoHover !== objeto) {
+					// Restaurar color anterior
+					if (objetoHover && materialOriginal) {
+						if(objetoHover.material.color.getHex() != 0xff0000){
+							objetoHover.material.color.copy(materialOriginal);
+						}
+					}
+					// Guardar color original
+					objetoHover = objeto;
+					materialOriginal = objeto.material.color.clone();
+					// Aplicar gris
+					objeto.material.color.set(0xaaaaaa);
+					tooltip.innerHTML = info?.nombre?.toUpperCase();
+				}
+
+				if(info){
+					tooltip.style.display = 'block';
+					tooltip.style.left = (event.clientX + 15) + 'px';
+					tooltip.style.top = (event.clientY + 15) + 'px';
+				}else{
+					tooltip.style.display = 'none';
+				}
+			} else {
+				// Restaurar último objeto
+				if (objetoHover && materialOriginal ) {
+					if(objetoHover.material.color.getHex() != 0xff0000){
+						objetoHover.material.color.copy(materialOriginal);
+					}
+				}
+				objetoHover = null;
+				materialOriginal = null;
+				tooltip.style.display = 'none';
+			}
+		});
+
+        $('#cerrar-modal').click(function() {
+			window.speechSynthesis.cancel();
+			document.getElementById('miModal').style.display = 'none';
+			if (objetoSeleccionado){
+				objetoSeleccionado.material = objetoSeleccionado.materialOriginal.clone();
+			}
+		});
+
+
+        // Animación
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            actualizarModal();
+            const delta = clock.getDelta();
+            if (mixer) mixer.update(delta);
+            renderer.render(scene, camera);
+        }
+        
+        animate();
+
+        // Resize responsive
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+
+        const emularScroll = (factor) => {
+            const direccion = new THREE.Vector3();
+            direccion.subVectors(camera.position, controls.target).normalize(); // Dirección de la cámara
+
+            // Calcular nueva posición
+            const nuevaPosicion = camera.position.clone().addScaledVector(direccion, factor);
+
+            // Calcular la nueva distancia a target
+            const distancia = nuevaPosicion.distanceTo(controls.target);
+            console.log(distancia);
+
+            if (factor > 0) {
+                if (distancia < 737) {
+                    camera.position.copy(nuevaPosicion);
+                    controls.update();
+                }
+            } else {
+                if (distancia > 50) {
+                    camera.position.copy(nuevaPosicion);
+                    controls.update();
+                }
+            }
+        };
+
+
+        const controlesMovimiento = {
+            acercar: () => emularScroll(-50),
+            alejar: () => emularScroll(50),
+        };
+
+        const controlesRotacion = {
+            rotarX: () => { if (modeloCraneo) modeloCraneo.rotation.x += 0.1; },
+            rotarX_neg: () => { if (modeloCraneo) modeloCraneo.rotation.x -= 0.1; },
+            rotarY: () => { if (modeloCraneo) modeloCraneo.rotation.y += 0.1; },
+            rotarY_neg: () => { if (modeloCraneo) modeloCraneo.rotation.y -= 0.1; },
+        };
+
+        const moverCamara = {
+            arriba: () => { camera.position.y += 20; controls.target.y += 20; controls.update(); },
+            abajo: () => { camera.position.y -= 20; controls.target.y -= 20; controls.update(); },
+            izquierda: () => { camera.position.x -= 20; controls.target.x -= 20; controls.update(); },
+            derecha: () => { camera.position.x += 20; controls.target.x += 20; controls.update(); },
+            adelante: () => { camera.position.z -= 20; controls.target.z -= 20; controls.update(); },
+            atras: () => { camera.position.z += 20; controls.target.z += 20; controls.update(); },
+        };
+
+        const gui = new GUI();
+
+        const carpetaMovimiento = gui.addFolder('Mover cámara');
+        carpetaMovimiento.add(controlesMovimiento, 'acercar').name('Acercar <i class="fa-solid fa-plus"></i>');
+        carpetaMovimiento.add(controlesMovimiento, 'alejar').name('Alejar <i class="fa-solid fa-minus"></i>');
+
+        carpetaMovimiento.open();
+
+        const carpetaRotacion = gui.addFolder('Rotar modelo');
+
+        carpetaRotacion.add(controlesRotacion, 'rotarY').name('<i class="fa-solid fa-arrow-left"></i> Rotar');
+        carpetaRotacion.add(controlesRotacion, 'rotarY_neg').name('<i class="fa-solid fa-arrow-right"></i> Rotar');
+        carpetaRotacion.add(controlesRotacion, 'rotarX').name('<i class="fa-solid fa-arrow-up"></i> Rotar');
+        carpetaRotacion.add(controlesRotacion, 'rotarX_neg').name('<i class="fa-solid fa-arrow-down"></i> Rotar');
+
+        carpetaRotacion.open();
+
+        const carpetaMover = gui.addFolder('Mover cámara libre');
+        carpetaMover.add(moverCamara, 'arriba').name('Arriba <i class="fa-solid fa-arrow-up"></i>');
+        carpetaMover.add(moverCamara, 'abajo').name('Abajo <i class="fa-solid fa-arrow-down"></i>');
+        carpetaMover.add(moverCamara, 'izquierda').name('Izquierda <i class="fa-solid fa-arrow-left"></i>');
+        carpetaMover.add(moverCamara, 'derecha').name('Derecha <i class="fa-solid fa-arrow-right"></i>');
+
+        carpetaMover.open();
+
+
+        const controlesAnimacion = {
+            time: 0,
+            play: () => { if (action) { action.paused = false; action.play(); } },
+            pause: () => { if (action) action.paused = true; },
+        }
+
+        const carpetaAnimacion = gui.addFolder('Animación');
+
+
+        // slider (se agrega cuando cargues el GLB)
+        let sliderAnim;
+
+        setTimeout(() => {
+            document.getElementsByClassName('title')[0].innerHTML = 'Controles del sistema';
+        }, 500);
+
+
+        document.addEventListener('mousedown', () => {
+            document.body.classList.add('grabbing');
+        });
+
+        document.addEventListener('mouseup', () => {
+            document.body.classList.remove('grabbing');
+        });
+
+        // Por si se suelta el clic fuera del navegador
+        document.addEventListener('mouseleave', () => {
+            document.body.classList.remove('grabbing');
+        });
+
+        let modeloCraneo = null;
+        loader.load(
+            'models/mios/ojo.glb',
+            function (gltf) {
+
+                modeloCraneo = gltf.scene;
+                modeloCraneo.scale.set(57.5, 57.5, 57.5);
+                modeloCraneo.position.set(-150, -80, -200);
+                mixer = new THREE.AnimationMixer(modeloCraneo);
+                
+                if (gltf.animations.length > 0) {
+                    const actions = [];
+                    gltf.animations.forEach((clip) => {
+                        const action = mixer.clipAction(clip);
+                        action.setLoop(THREE.LoopOnce);
+                        action.clampWhenFinished = true;
+                        action.play();
+                        action.paused = true;
+                        action.time = 0;
+                        mixer.update(0);
+                        actions.push(action);
+                    });
+
+                    sliderAnim = carpetaAnimacion
+                        .add(controlesAnimacion, "time", 0, 2.85, 0.01)
+                        .name("⏩ Expandir ")
+                        .onChange((value) => {
+                            actions.forEach((action) => {
+                                action.paused = true;
+                                action.time = Math.min(
+                                    value,
+                                    action.getClip().duration
+                                );
+                            });
+                            mixer.update(0);
+                        });
+                }
+
+                scene.add(modeloCraneo);
+
+                const box = new THREE.Box3().setFromObject(modeloCraneo);
+                const center = box.getCenter(new THREE.Vector3());
+
+                controls.target.copy(center);
+                controls.update();
+
+
+                modeloCraneo.traverse((child) => {
+                    if (child.isMesh) {
+                        child.material = child.material.clone();
+                        child.materialOriginal = child.material.clone();
+                        objetosClickeables.push(child);
+                        console.log(
+                            'Nodo encontrado:',
+                            child.name,
+                            child.type
+                        );
+
+                    }
+                });
+
+            },
+            function (xhr) {
+                const porcentaje = (xhr.loaded / xhr.total * 100);
+                document.getElementById('barra').style.width = porcentaje + '%';
+
+                document.getElementById('barra-text').innerHTML =  porcentaje.toFixed(2) + '%';
+
+                if (xhr.loaded === xhr.total) {
+                    setTimeout(() => {
+                        document.getElementById('loading-container').style.display = 'none';
+                    }, 2000);
+                }
+
+            },
+            function (error) {
+                console.error(
+                    'Error al cargar el modelo .glb',
+                    error
+                );
+            }
+        );
+
+
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Molécula de ADN</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<link type="text/css" rel="stylesheet" href="main.css">
+	<link href="../bootstrap/bootstrap.min.css" rel="stylesheet">
+	<!-- Bootstrap JS (requerido para modales) -->
+	<script src="../bootstrap/bootstrap.bundle.min.js"></script>
+	<link rel="stylesheet" href="../bootstrap/style.css" />
+	<script src="../jquery-3.7.1.min.js"></script>
+	<link rel="stylesheet" href="../fontawesome/css/all.min.css">
+	<link rel="stylesheet" href="./css/index.css">
+</head>
+
+<body>
+
+	<div id="labels-container"></div>
+
+	<!-- Controls display for spaceship view -->
+	<div id="spaceship-controls" class="controls-display">
+		<div class="controls-title">Controles de la Nave:</div>
+		<div class="controls-container">
+			<div class="control-item">
+				<span class="key-symbol">W</span> Adelante
+			</div>
+			<div class="control-item"><span class="key-symbol">S</span> Atrás</div>
+			<div class="control-item">
+				<span class="key-symbol">A</span> Izquierda
+			</div>
+			<div class="control-item">
+				<span class="key-symbol">D</span> Derecha
+			</div>
+			<div class="control-item"><span class="key-symbol">Q</span> Arriba</div>
+			<div class="control-item"><span class="key-symbol">E</span> Abajo</div>
+			<div class="control-item">
+				<span class="key-symbol">⬆️⬇️⬅️➡️</span> Rotar
+			</div>
+		</div>
+	</div>
+
+	 <!-- Controls display for system view -->
+	 <div id="system-controls" class="controls-display">
+		<div class="controls-title">Controles del Sistema:</div>
+		<div class="control-item">
+			<span class="key-symbol">🖱️</span> Click izquierdo + Arrastrar para rotar cámara
+		</div>
+		<div class="control-item">
+			<span class="key-symbol">🖱️</span> Click derecho + arrastrar para mover el Modelo
+		</div>
+	</div>
+
+	<!-- Modal de información del planeta -->
+	<div id="miModal" class="modal-flotante">
+		<div class="d-flex justify-content-end align-items-center gap-3" id="botones-modal">
+			<span id="boton-hablar" ><i class="fa-solid fa-volume-high"></i></span>
+			<span class="cerrar-modal" id="cerrar-modal"><i style="color: red; font-size: 40px;" class="fa-solid fa-xmark"></i></span>
+		</div>
+        <!-- Botones de las Pestañas -->
+		<h3 id="modal-nombre-texto">Cargando...</h3>
+        <div class="pestanas-container">
+            <button class="btn-pestana activa" onclick="cambiarPestana(event, 'tab-descripcion')">Descripción</button>
+            <button class="btn-pestana" onclick="cambiarPestana(event, 'tab-funciones')">Funciones</button>
+        </div>
+    
+        <div id="tab-descripcion" class="contenido-pestana activa">
+            <p id="modal-descripcion-texto">Cargando...</p>
+        </div>
+        <div id="tab-funciones" class="contenido-pestana">
+            <p id="modal-funciones-texto">Cargando...</p>
+        </div>
+    </div>
+
+	<div id="container"></div>
+
+	<div id="loading-container">
+		<div class="loading-container-content">
+			<div id="loading-text">Cargando modelo</div>
+			<div class="contenedor" style="position: relative;">
+				<span id="barra-text">0%</span>
+				<div id="barra" class="barra">
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="info">Modelo 3D Molécula de ADN</div>
+
+
+	<script type="importmap">
+		{
+			"imports": {
+				"three": "../build/three.module.js",
+				"three/addons/": "./jsm/"
+			}
+		}
+	</script>
+
+	<script src="./js/index.js"></script>
+
+	<script type="module">
+
+		var partesADN = [
+			{
+				id: "Cylinder026",
+				nombre: "Adenina",
+				funcion: "La adenina cumple múltiples funciones en los organismos vivos: <ul><li>Codificación genética: Participa en la formación de nucleótidos que componen el ADN y ARN, siendo esencial para la transmisión de información genética.</li><li>Metabolismo energético: Forma parte del ATP (adenosín trifosfato), la principal molécula de almacenamiento y transferencia de energía en las células.</li><li>Coenzimas: Es un componente de coenzimas como NAD (nicotinamida adenina dinucleótido) y FAD (flavina adenina dinucleótido), que son cruciales en reacciones redox y en el metabolismo celular.</li><li>Señalización celular: Participa en la formación de AMPc (adenosín monofosfato cíclico), un segundo mensajero en diversas vías de señalización intracelular.</li></ul>",
+				descripcion: "La adenina es una base nitrogenada que forma parte de los ácidos nucleicos, específicamente del ADN y ARN. Es una purina, compuesta por un anillo de seis miembros fusionado a un anillo de cinco miembros, con la fórmula molecular C<sub>5</sub>H<sub>5</sub>N<sub>5</sub>. En el ADN, se empareja con la timina mediante dos enlaces de hidrógeno, mientras que en el ARN se empareja con el uracilo. Esta complementariedad es esencial para la estabilidad de la doble hélice del ADN y la correcta transcripción del ARN."
+			},
+			{
+				id: "Cylinder027",
+				nombre: "Timina",
+				funcion: "La timina cumple funciones esenciales en los organismos vivos: <ul><li>Codificación genética: Forma parte del ADN, emparejándose específicamente con la adenina, lo que asegura la fidelidad en la replicación y transcripción genética.</li><li>Estabilidad del ADN: Gracias a sus dos enlaces de hidrógeno con la adenina, contribuye a la estabilidad estructural de la doble hélice.</li><li>Reconocimiento en reparación del ADN: Su estructura permite identificar y corregir errores en la replicación a través de mecanismos de reparación celular.</li></ul>",
+				descripcion: "La timina es una base nitrogenada del tipo pirimidina que se encuentra únicamente en el ADN. Su fórmula molecular es C<sub>5</sub>H<sub>6</sub>N<sub>2</sub>O<sub>2</sub>. En la molécula de ADN, se empareja exclusivamente con la adenina mediante dos enlaces de hidrógeno. En el ARN, la timina es reemplazada por el uracilo. Su presencia es clave para la estabilidad genética y la correcta transmisión de la información hereditaria."
+			},
+			{
+				id: "Cylinder028",
+				nombre: "Guanina",
+				funcion: "La guanina cumple funciones clave en los sistemas biológicos: <ul><li>Codificación genética: Es una de las cuatro bases nitrogenadas principales del ADN y ARN, emparejándose con la citosina, lo que permite el almacenamiento de información genética.</li><li>Estabilidad estructural: Forma tres enlaces de hidrógeno con la citosina, lo que confiere gran estabilidad a la doble hélice del ADN.</li><li>Participación en procesos regulatorios: Puede sufrir metilación, lo que influye en la regulación de la expresión génica.</li><li>Rol en señalización: Derivados de guanina, como GMP cíclico (cGMP), actúan como segundos mensajeros en rutas de señalización celular.</li></ul>",
+				descripcion: "La guanina es una base nitrogenada del tipo purina, con fórmula molecular C<sub>5</sub>H<sub>5</sub>N<sub>5</sub>O. Está presente en el ADN y ARN, y se empareja específicamente con la citosina mediante tres enlaces de hidrógeno. Su estructura de doble anillo y su capacidad de formar múltiples enlaces la convierten en una pieza clave en la estabilidad del material genético y en la regulación celular."
+			},
+			{
+				id: "Cylinder029",
+				nombre: "Citosina",
+				funcion: "La citosina desempeña varias funciones fundamentales: <ul><li>Codificación genética: Es una de las bases del ADN y ARN, emparejándose con la guanina, lo que permite codificar la información genética.</li><li>Estabilidad del ADN: Su capacidad para formar tres enlaces de hidrógeno con la guanina le confiere un papel estructural relevante en la doble hélice.</li><li>Modificación epigenética: Puede ser metilada (5-metilcitosina), lo que influye en la regulación de genes sin alterar la secuencia del ADN.</li><li>Participación en reparación del ADN: Es blanco de desaminación espontánea, por lo que interviene en mecanismos de reparación para mantener la integridad genética.</li></ul>",
+				descripcion: "La citosina es una base nitrogenada del tipo pirimidina, con fórmula molecular C<sub>4</sub>H<sub>5</sub>N<sub>3</sub>O. Se encuentra tanto en el ADN como en el ARN, donde forma pares de bases con la guanina mediante tres enlaces de hidrógeno. Su capacidad para ser modificada químicamente y su importancia en el emparejamiento hacen que sea esencial para la expresión génica y la regulación epigenética."
+			},
+			{
+				id: "node_id45016",
+				nombre: "Esqueleto de fosfato de azúcar",
+				funcion: "El esqueleto de fosfato de azúcar cumple funciones esenciales en los ácidos nucleicos: <ul><li>Soporte estructural: Proporciona la columna vertebral del ADN y ARN, uniendo los nucleótidos mediante enlaces fosfodiéster.</li><li>Estabilidad del material genético: Aporta rigidez y resistencia a la degradación química y enzimática, protegiendo la información genética.</li><li>Direccionalidad: Confirma la orientación 5’ → 3’ de las cadenas de ADN y ARN, lo que es crucial para procesos como la replicación y la transcripción.</li><li>Facilitación de interacciones moleculares: Permite la correcta disposición espacial de las bases nitrogenadas para el emparejamiento complementario.</li></ul>",
+				descripcion: "El esqueleto de fosfato de azúcar está compuesto por una alternancia de grupos fosfato y azúcares pentosa (desoxirribosa en el ADN y ribosa en el ARN). Cada nucleótido se une al siguiente mediante un enlace fosfodiéster entre el grupo 3' hidroxilo de un azúcar y el grupo 5' fosfato del siguiente. Esta estructura da lugar a una cadena lineal con polaridad definida, que soporta las bases nitrogenadas y permite el almacenamiento y transmisión de la información genética."
+			},
+			{
+				id: "node_id45018",
+				nombre: "Esqueleto de fosfato de azúcar",
+				funcion: "El esqueleto de fosfato de azúcar cumple funciones esenciales en los ácidos nucleicos: <ul><li>Soporte estructural: Proporciona la columna vertebral del ADN y ARN, uniendo los nucleótidos mediante enlaces fosfodiéster.</li><li>Estabilidad del material genético: Aporta rigidez y resistencia a la degradación química y enzimática, protegiendo la información genética.</li><li>Direccionalidad: Confirma la orientación 5’ → 3’ de las cadenas de ADN y ARN, lo que es crucial para procesos como la replicación y la transcripción.</li><li>Facilitación de interacciones moleculares: Permite la correcta disposición espacial de las bases nitrogenadas para el emparejamiento complementario.</li></ul>",
+				descripcion: "El esqueleto de fosfato de azúcar está compuesto por una alternancia de grupos fosfato y azúcares pentosa (desoxirribosa en el ADN y ribosa en el ARN). Cada nucleótido se une al siguiente mediante un enlace fosfodiéster entre el grupo 3' hidroxilo de un azúcar y el grupo 5' fosfato del siguiente. Esta estructura da lugar a una cadena lineal con polaridad definida, que soporta las bases nitrogenadas y permite el almacenamiento y transmisión de la información genética."
+			}
+		];
+
+		import * as THREE from 'three';
+		import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+		import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+		import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+		let scene, camera, renderer, controls;
+
+		// Inicializar escena
+		scene = new THREE.Scene();
+		scene.background = new THREE.Color(0x222222);
+
+		// Cámara
+		camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
+		camera.position.set(300, 150, 500);
+		camera.updateProjectionMatrix();
+
+		// Renderizador
+		renderer = new THREE.WebGLRenderer({ antialias: true });
+		renderer.setSize(window.innerWidth, window.innerHeight);
+		document.body.appendChild(renderer.domElement);
+
+		// Controles orbitales
+		controls = new OrbitControls(camera, renderer.domElement);
+		const distanciaInicial = camera.position.length();
+
+		controls.maxDistance = distanciaInicial;
+		controls.minDistance = 500;
+		// Luz
+		const light = new THREE.HemisphereLight(0xffffff, 0x444444, 2.0); // el tercer parámetro es la intensidad
+		light.position.set(-120, 120, 120);
+		scene.add(light);
+
+		// Cargar modelo GLB
+		const loader = new GLTFLoader();
+		const raycaster = new THREE.Raycaster();
+		const mouse = new THREE.Vector2();
+		const objetosClickeables = []; // Aquí guardarás los nodos (meshes)
+		let objetoSeleccionado = null;
+		let colorOriginal = null;
+
+
+		let modeloADN = null;
+		loader.load(
+			'models/mios/molecula-adn.glb',
+			function (gltf) {
+				modeloADN = gltf.scene;
+				modeloADN.scale.set(600, 600, 600);
+				modeloADN.position.set(0, -30, 0);
+
+				modeloADN.rotation.z = Math.PI / 1.4;
+				modeloADN.rotation.y = 0.4;
+
+				scene.add(modeloADN);
+
+				const box = new THREE.Box3().setFromObject(modeloADN);
+                const center = box.getCenter(new THREE.Vector3());
+
+                controls.target.copy(center);
+                controls.update();
+
+				modeloADN.traverse((child) => {
+					if (child.isMesh) {
+						child.material = child.material.clone();
+						child.materialOriginal = child.material.clone();
+						objetosClickeables.push(child);
+						console.log('Nodo encontrado:', child.name, child.type);
+					} else {
+						console.log('Nodo encontrado:', child.name, child.type);
+					}
+				});
+			},
+			function (xhr) {
+				document.getElementById('barra').style.width = (xhr.loaded / xhr.total * 100) + '%';
+				document.getElementById('barra-text').innerHTML = (xhr.loaded / xhr.total * 100).toFixed(2) + '%';	
+				if (xhr.loaded === xhr.total) {
+					setTimeout(() => {
+						document.getElementById('loading-container').style.display = 'none';
+					}, 2000);	
+				}
+			},
+			function (error) {
+				console.error('Error al cargar el modelo .glb', error);
+			}
+		);
+
+		window.addEventListener('click', (event) => {
+			// Si el clic fue dentro del modal, salir
+			if (event.target.closest('.modal-flotante')) {
+				return;
+			}
+
+			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+			mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+			raycaster.setFromCamera(mouse, camera);
+
+			const intersects = raycaster.intersectObjects(objetosClickeables, true);
+
+			if (intersects.length > 0) {
+				const objetoActual = intersects[0].object;
+
+				// Si hay un objeto seleccionado anteriormente, restaurar su color
+				if (objetoSeleccionado){
+					objetoSeleccionado.material = objetoSeleccionado.materialOriginal.clone();
+				}
+
+				// Guardar el nuevo objeto seleccionado
+				objetoSeleccionado = objetoActual;
+				window.speechSynthesis.cancel();
+				// Guardar el color original solo si es un nuevo objeto
+				colorOriginal = objetoActual.materialOriginal.clone();
+				objetoActual.material.color.set(0x3d3d3d);
+                posicionarModalEnPunto();
+				tooltip.style.display = 'none';
+			}
+		});
+
+		function posicionarModalEnPunto() {
+            if (!objetoSeleccionado) return;
+
+            const wp = new THREE.Vector3();
+
+            // Obtener posición global del objeto
+            objetoSeleccionado.getWorldPosition(wp);
+
+            // Convertir a coordenadas de pantalla
+            wp.project(camera);
+
+            const x = (wp.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-wp.y * 0.5 + 0.5) * window.innerHeight;
+
+            const modal = document.getElementById('miModal');
+
+            modal.style.position = 'absolute';
+            modal.style.left = `${x - modal.offsetWidth / 2}px`;
+			modal.style.top = `${y - modal.offsetHeight - 20}px`;
+
+            var info = null;
+            info = partesADN.find(parte => parte.id === objetoSeleccionado.name);
+			if (info) {
+				modal.style.display = 'block';
+				document.getElementById('modal-nombre-texto').innerHTML = info.nombre;
+                document.getElementById('modal-descripcion-texto').innerHTML = info.descripcion;
+                document.getElementById('modal-funciones-texto').innerHTML = info.funcion;
+            } else {
+                modal.style.display = 'none';
+				document.getElementById('modal-nombre-texto').innerHTML = '';
+				document.getElementById('modal-descripcion-texto').innerHTML = '';
+				document.getElementById('modal-funciones-texto').innerHTML = '';
+            }
+        }
+
+		function actualizarModal() {
+            if (!objetoSeleccionado) return;
+            // Posición mundial del objeto
+            const posicion = new THREE.Vector3();
+            objetoSeleccionado.getWorldPosition(posicion);
+
+            // Convertir a coordenadas de pantalla
+            posicion.project(camera);
+
+            const x = (posicion.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-posicion.y * 0.5 + 0.5) * window.innerHeight;
+
+            const modal = document.getElementById('miModal');
+            modal.style.left = `${x}px`;
+            modal.style.top = `${y}px`;
+        }
+
+        
+        let objetoHover = null;
+		var tooltip = null;
+		let materialOriginal = null;
+		window.addEventListener('mousemove', (event) => {
+			//verificar si el color es rojo
+			
+			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+			mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+			raycaster.setFromCamera(mouse, camera);
+
+			const intersects = raycaster.intersectObjects(
+				objetosClickeables,
+				true
+			);
+
+			if (!tooltip) {
+				tooltip = document.createElement('div');
+				tooltip.id = 'tooltip';
+				document.body.appendChild(tooltip);
+			}
+
+			if (intersects.length > 0) {
+				const objeto = intersects[0].object;
+				const info = partesADN.find(
+					parte => parte.id === objeto.name
+				);
+
+				// Si cambió de objeto
+				if (objetoHover !== objeto) {
+					// Restaurar color anterior
+					if (objetoHover && materialOriginal) {
+						if(objetoHover.material.color.getHex() != 0x3d3d3d){
+							objetoHover.material.color.copy(materialOriginal);
+						}
+					}
+					// Guardar color original
+					objetoHover = objeto;
+					materialOriginal = objeto.material.color.clone();
+					// Aplicar gris
+					objeto.material.color.set(0xaaaaaa);
+					tooltip.innerHTML = info?.nombre?.toUpperCase();
+				}
+
+				if(info){
+					tooltip.style.display = 'block';
+					tooltip.style.left = (event.clientX + 15) + 'px';
+					tooltip.style.top = (event.clientY + 15) + 'px';
+				}else{
+					tooltip.style.display = 'none';
+				}
+			} else {
+				// Restaurar último objeto
+				if (objetoHover && materialOriginal ) {
+					if(objetoHover.material.color.getHex() != 0x3d3d3d){
+						objetoHover.material.color.copy(materialOriginal);
+					}
+				}
+				objetoHover = null;
+				materialOriginal = null;
+				tooltip.style.display = 'none';
+			}
+		});
+
+		$('#cerrar-modal').click(function() {
+			window.speechSynthesis.cancel();
+			document.getElementById('miModal').style.display = 'none';
+			if (objetoSeleccionado){
+				objetoSeleccionado.material = objetoSeleccionado.materialOriginal.clone();
+			}
+		});
+
+		// Animación
+		function animate() {
+			requestAnimationFrame(animate);
+			controls.update();
+			actualizarModal();
+			renderer.render(scene, camera);
+		}
+		animate();
+
+		// Resize responsive
+		window.addEventListener('resize', () => {
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+		});
+
+
+		const emularScroll = (factor) => {
+			const direccion = new THREE.Vector3();
+			direccion.subVectors(camera.position, controls.target).normalize(); // Dirección de la cámara
+
+			// Calcular nueva posición
+			const nuevaPosicion = camera.position.clone().addScaledVector(direccion, factor);
+
+			// Calcular la nueva distancia a target
+			const distancia = nuevaPosicion.distanceTo(controls.target);
+			console.log(distancia);
+
+			if (factor > 0) {
+				if (distancia < 737) {
+					camera.position.copy(nuevaPosicion);
+					controls.update();
+				}
+			} else {
+				if (distancia > 500) {
+					camera.position.copy(nuevaPosicion);
+					controls.update();
+				}
+			}
+		};
+
+
+		const controlesMovimiento = {
+			acercar: () => emularScroll(-50),
+			alejar: () => emularScroll(50),
+		};
+
+		const controlesRotacion = {
+			rotarY: () => { if (modeloADN) modeloADN.rotation.y += 0.1; },
+			rotarX: () => { if (modeloADN) modeloADN.rotation.x += 0.1; },
+			rotarZ: () => { if (modeloADN) modeloADN.rotation.z += 0.1; },
+		};
+
+		const gui = new GUI();
+		const carpetaMovimiento = gui.addFolder('Mover cámara');
+
+		carpetaMovimiento.add(controlesRotacion, 'rotarX').name('Rotar Y');
+		carpetaMovimiento.add(controlesRotacion, 'rotarY').name('Rotar X');
+		carpetaMovimiento.add(controlesRotacion, 'rotarZ').name('Rotar Z');
+		carpetaMovimiento.add(controlesMovimiento, 'acercar').name('<i class="fa-solid fa-arrow-up"></i> Acercar');
+		carpetaMovimiento.add(controlesMovimiento, 'alejar').name('<i class="fa-solid fa-arrow-down"></i> Alejar');
+
+		carpetaMovimiento.open();
+
+		setTimeout(() => {
+			document.getElementsByClassName('title')[0].innerHTML = 'Controles del sistema';
+		}, 500);
+
+
+		document.addEventListener('mousedown', () => {
+			document.body.classList.add('grabbing');
+		});
+
+		document.addEventListener('mouseup', () => {
+			document.body.classList.remove('grabbing');
+		});
+
+		// Por si se suelta el clic fuera del navegador
+		document.addEventListener('mouseleave', () => {
+			document.body.classList.remove('grabbing');
+		});
+
+
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Célula Vegetal</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<link type="text/css" rel="stylesheet" href="main.css">
+	<link href="../bootstrap/bootstrap.min.css" rel="stylesheet">
+	<!-- Bootstrap JS (requerido para modales) -->
+	<script src="../bootstrap/bootstrap.bundle.min.js"></script>
+	<link rel="stylesheet" href="../bootstrap/style.css" />
+	<script src="../jquery-3.7.1.min.js"></script>
+	<link rel="stylesheet" href="../fontawesome/css/all.min.css">
+
+	<link rel="stylesheet" href="./css/index.css">
+</head>
+
+<body>
+
+	<div id="labels-container"></div>
+
+	<!-- Controls display for spaceship view -->
+	<div id="spaceship-controls" class="controls-display">
+		<div class="controls-title">Controles de la Nave:</div>
+		<div class="controls-container">
+			<div class="control-item">
+				<span class="key-symbol">W</span> Adelante
+			</div>
+			<div class="control-item"><span class="key-symbol">S</span> Atrás</div>
+			<div class="control-item">
+				<span class="key-symbol">A</span> Izquierda
+			</div>
+			<div class="control-item">
+				<span class="key-symbol">D</span> Derecha
+			</div>
+			<div class="control-item"><span class="key-symbol">Q</span> Arriba</div>
+			<div class="control-item"><span class="key-symbol">E</span> Abajo</div>
+			<div class="control-item">
+				<span class="key-symbol">⬆️⬇️⬅️➡️</span> Rotar
+			</div>
+		</div>
+	</div>
+
+	<!-- Controls display for system view -->
+	 <!-- Controls display for system view -->
+	 <div id="system-controls" class="controls-display">
+		<div class="controls-title">Controles del Sistema:</div>
+		<div class="control-item">
+			<span class="key-symbol">🖱️</span> Click izquierdo + Arrastrar para rotar cámara
+		</div>
+		<div class="control-item">
+			<span class="key-symbol">🖱️</span> Click derecho + arrastrar para mover el Modelo
+		</div>
+	</div>
+
+	<!-- Modal de información del planeta -->
+	<div id="miModal" class="modal-flotante">
+		<div class="d-flex justify-content-end align-items-center gap-3" id="botones-modal">
+			<span id="boton-hablar" ><i class="fa-solid fa-volume-high"></i></span>
+			<span class="cerrar-modal" id="cerrar-modal"><i style="color: red; font-size: 40px;" class="fa-solid fa-xmark"></i></span>
+		</div>
+        <!-- Botones de las Pestañas -->
+		<h3 id="modal-nombre-texto">Cargando...</h3>
+        <div class="pestanas-container">
+            <button class="btn-pestana activa" onclick="cambiarPestana(event, 'tab-descripcion')">Descripción</button>
+            <button class="btn-pestana" onclick="cambiarPestana(event, 'tab-funciones')">Funciones</button>
+        </div>
+    
+        <div id="tab-descripcion" class="contenido-pestana activa">
+            <p id="modal-descripcion-texto">Cargando...</p>
+        </div>
+        <div id="tab-funciones" class="contenido-pestana">
+            <p id="modal-funciones-texto">Cargando...</p>
+        </div>
+    </div>
+
+	<div id="container"></div>
+
+	<div id="loading-container">
+		<div class="loading-container-content">
+			<div id="loading-text">Cargando modelo</div>
+			<div class="contenedor" style="position: relative;">
+				<span id="barra-text">0%</span>
+				<div id="barra" class="barra">
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="info">Modelo 3D de la Célula Vegetal</div>
+
+
+	<script type="importmap">
+		{
+			"imports": {
+				"three": "../build/three.module.js",
+				"three/addons/": "./jsm/"
+			}
+		}
+	</script>
+
+	<script src="./js/index.js"></script>
+
+	<script type="module">
+
+		import * as THREE from 'three';
+		import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+		import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+		import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+		let scene, camera, renderer, controls;
+
+		// Inicializar escena
+		scene = new THREE.Scene();
+		scene.background = new THREE.Color(0x222222);
+
+		// Cámara
+		camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
+		camera.position.set(500, 250, 450);
+		camera.updateProjectionMatrix();
+
+
+		// Renderizador
+		renderer = new THREE.WebGLRenderer({ antialias: true });
+		renderer.setSize(window.innerWidth, window.innerHeight);
+		document.body.appendChild(renderer.domElement);
+
+		// Controles orbitales
+		controls = new OrbitControls(camera, renderer.domElement);
+		const distanciaInicial = camera.position.length();
+
+		// Limitar alejamiento máximo a la distancia inicial
+		controls.maxDistance = distanciaInicial;
+		controls.minDistance = 500;
+		console.log(distanciaInicial);
+
+		// Luz
+		// Crear luz hemisférica
+		const light = new THREE.HemisphereLight(0xffffff, 0x444444, 5.0); // el tercer parámetro es la intensidad
+		light.position.set(-120, 120, 120);
+		scene.add(light);
+
+		// Cargar modelo GLB
+		const loader = new GLTFLoader();
+		const raycaster = new THREE.Raycaster();
+		const mouse = new THREE.Vector2();
+		const objetosClickeables = []; // Aquí guardarás los nodos (meshes)
+		let objetoSeleccionado = null;
+		let colorOriginal = null;
+
+		const partesCelula = [
+			{
+				id: "cell_TT_checker_512x512_UV_GRID_0",
+				nombre: "Membrana celular",
+				funcion: "La membrana contribuye a mantener la integridad de la célula y participa en procesos de señalización, facilitando la comunicación con el entorno y coordinando respuestas ante estímulos externos",
+				descripcion: "La membrana celular, o plasmática, se trata de una estructura semipermeable que delimita la célula y regula el intercambio de sustancias con el medio externo, compuesta por una bicapa lipídica con proteínas incrustadas, esta barrera permite el paso selectivo de nutrientes, iones y otras moléculas esenciales, al mismo tiempo que previene la entrada de elementos nocivos."
+			},
+			{
+				id: "vacuole_TT_checker_512x512_UV_GRID_0",
+				nombre: "Vacuola",
+				funcion: "Almacena sustancias y regula el contenido celular",
+				descripcion: "La mayoría de las células vegetales maduras tienen una vacuola central que ocupa más del 30% del volumen de la célula. La vacuola central puede ocupar hasta el 90% del volumen de ciertas células. La vacuola central está rodeado por una membrana llamada tonoplasto . La vacuola central tiene muchas funciones. Aparte del almacenamiento, el papel principal de la vacuola es mantener la presión de turgencia contra la pared celular. Las proteínas que se encuentran en el tonoplasto controlan el flujo de agua dentro y fuera de la vacuola. La vacuola central también almacena los pigmentos que dan color a las flores. <br> La vacuola central contiene grandes cantidades de un líquido llamado savia celular, que difiere en composición al citosol de la célula. La savia celular es una mezcla de agua, enzimas, iones, sales y otras sustancias. La savia celular también puede contener subproductos tóxicos que han sido eliminados del citosol. Las toxinas en la vacuola pueden ayudar a proteger algunas plantas de ser comidas."
+			},
+			{
+				id: "cytoplasm_TT_checker_512x512_UV_GRID_0",
+				nombre: "Citoplasma",
+				funcion: "Sostiene los orgánulos celulares",
+				descripcion: "El citoplasma de la célula vegetal es el medio viscoso y gelatinoso que llena el interior de la célula, albergando todos los organelos y facilitando las reacciones bioquímicas necesarias para la vida. <br> Este componente no sólo sirve de soporte físico, sino que actúa como canal de comunicación y transporte de moléculas, nutrientes y señales químicas entre diferentes regiones celulares. <br> Su consistencia permite que los orgánulos se mantengan en su posición, favoreciendo la correcta distribución de materiales y la regulación de diversas funciones metabólicas."
+			},
+			{
+				id: "lysosome_TT_checker_512x512_UV_GRID_0",
+				nombre: "Cloroplasto",
+				funcion: "Es el orgánulo responsable de la fotosíntesis",
+				descripcion: "Los cloroplastos son los orgánulos celulares que, en los organismos eucariotas fotosintetizadores, se encargan de realizar la fotosíntesis. Están limitados por una envoltura formada por las dos membranas concéntricas y contienen muchas vesículas, los tilacoides, donde se encuentran organizados los pigmentos y demás moléculas que convierten la energía lumínica en energía química, como la clorofila."
+			},
+			{
+				id: "nucleus_TT_checker_512x512_UV_GRID_0001_1",
+				nombre: "Núcleo",
+				funcion: "Contiene el material genético (ADN)",
+				descripcion: "El núcleo de la célula vegetal es su centro de mando en el que se almacena el material genético, es decir, el ADN que contiene las instrucciones necesarias para la síntesis de proteínas y la replicación durante el proceso de división celular. <br> Rodeado por una doble membrana denominada envoltura nuclear, el núcleo protege y organiza la información genética, garantizando que las instrucciones para el funcionamiento y la reproducción de la célula se transmitan de manera precisa a las células hijas. <br> Esta organización es crucial para mantener la estabilidad y continuidad de los procesos vitales en la planta."
+			},
+			{
+				id: "mitochondria_TT_checker_512x512_UV_GRID_0001",
+				nombre: "Mitocondria",
+				funcion: "Es el orgánulo responsable de la respiración celular",
+				descripcion: "Consideradas las centrales energéticas de la célula, las mitocondrias son responsables de generar ATP mediante la respiración celular, transformando la energía química derivada de los nutrientes en una forma que pueda emplear la célula. <br> Estas estructuras, que poseen su propio ADN, evidencian un origen endosimbiótico y participan activamente en el suministro de energía para la síntesis de moléculas, el movimiento y otros procesos celulares fundamentales, haciendo posible la realización de actividades vitales complejas."
+			},
+			{
+				id: "smoothER_TT_checker_512x512_UV_GRID_0",
+				nombre: "Aparato de Golgi",
+				funcion: "Empaque y distribución de proteínas y lípidos",
+				descripcion: "El aparato de Golgi es el encargado de empaquetar, etiquetar, guardar y enviar los productos que provienen del retículo endoplasmático, otro organelo que se encuentra dentro de la célula. Dichos productos que procesa pueden ser:<br><ul><li>Proteínas</li><li>Lípidos</li></ul><br>Suelen ser modificados eliminando monómeros de azúcar, sustituyendo o modificando porciones, todo con la finalidad de que pueda ser usado dentro de las actividades celulares."
+			},
+			{
+				id: "roughER_TT_checker_512x512_UV_GRID_0",
+				nombre: "Reticulo endoplasmático",
+				funcion: "Síntesis de proteínas y lípidos",
+				descripcion: "El retículo endoplasmático es una red intrincada de membranas que se extiende por el citoplasma y se divide en 2 tipos funcionales: el retículo endoplasmático rugoso y el liso. <br> El primero, que está dotado de ribosomas en su superficie, se halla involucrado en la síntesis y el plegamiento de proteínas, mientras que, el retículo endoplasmático liso participa en la producción y el metabolismo de lípidos, así como en la detoxificación de compuestos. <br> Esta separación de funciones permite una organización interna optimizada y un flujo constante de materiales esenciales para la célula."
+			},
+			{
+				id: "peroxisome_TT_checker_512x512_UV_GRID_0003",
+				nombre: "Ribosomas",
+				funcion: "Síntesis de proteínas",
+				descripcion: "Los ribosomas son orgánulos celulares que se encuentran en la célula vegetal y que son responsables de la síntesis de proteínas. "
+			}
+		]
+
+
+		loader.load(
+			'models/mios/celula-vegetal.glb',
+			function (gltf) {
+				const model = gltf.scene;
+				model.position.set(60, 170, 0);
+				model.scale.set(2.7, 2.7, 2.7);
+				scene.add(model);
+
+				model.traverse((child) => {
+					if (child.isMesh) {
+						child.material = child.material.clone();
+						child.materialOriginal = child.material.clone();
+						objetosClickeables.push(child);
+						console.log(child.name);
+					}
+				});
+			},
+			function (xhr) {
+				document.getElementById('barra').style.width = (xhr.loaded / xhr.total * 100) + '%';
+				document.getElementById('barra-text').innerHTML = (xhr.loaded / xhr.total * 100).toFixed(2) + '%';	
+				if (xhr.loaded === xhr.total) {
+					setTimeout(() => {
+						document.getElementById('loading-container').style.display = 'none';
+					}, 2000);	
+				}
+			},
+			function (error) {
+				console.error('Error al cargar el modelo .glb', error);
+			}
+		);
+
+		function posicionarModalEnPunto() {
+            if (!objetoSeleccionado) return;
+
+            const wp = new THREE.Vector3();
+
+            // Obtener posición global del objeto
+            objetoSeleccionado.getWorldPosition(wp);
+
+            // Convertir a coordenadas de pantalla
+            wp.project(camera);
+
+            const x = (wp.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-wp.y * 0.5 + 0.5) * window.innerHeight;
+
+            const modal = document.getElementById('miModal');
+
+            modal.style.position = 'absolute';
+            modal.style.left = `${x - modal.offsetWidth / 2}px`;
+			modal.style.top = `${y - modal.offsetHeight - 20}px`;
+
+            var info = null;
+            info = partesCelula.find(parte => parte.id === objetoSeleccionado.name);
+			if (info) {
+				modal.style.display = 'block';
+				document.getElementById('modal-nombre-texto').innerHTML = info.nombre;
+                document.getElementById('modal-descripcion-texto').innerHTML = info.descripcion;
+                document.getElementById('modal-funciones-texto').innerHTML = info.funcion;
+            } else {
+                modal.style.display = 'none';
+				document.getElementById('modal-nombre-texto').innerHTML = '';
+				document.getElementById('modal-descripcion-texto').innerHTML = '';
+				document.getElementById('modal-funciones-texto').innerHTML = '';
+            }
+        }
+
+		function actualizarModal() {
+            if (!objetoSeleccionado) return;
+            // Posición mundial del objeto
+            const posicion = new THREE.Vector3();
+            objetoSeleccionado.getWorldPosition(posicion);
+
+            // Convertir a coordenadas de pantalla
+            posicion.project(camera);
+
+            const x = (posicion.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-posicion.y * 0.5 + 0.5) * window.innerHeight;
+
+            const modal = document.getElementById('miModal');
+            modal.style.left = `${x}px`;
+            modal.style.top = `${y}px`;
+        }
+
+        
+        let objetoHover = null;
+		var tooltip = null;
+		let materialOriginal = null;
+		window.addEventListener('mousemove', (event) => {
+			//verificar si el color es rojo
+			
+			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+			mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+			raycaster.setFromCamera(mouse, camera);
+
+			const intersects = raycaster.intersectObjects(
+				objetosClickeables,
+				true
+			);
+
+			if (!tooltip) {
+				tooltip = document.createElement('div');
+				tooltip.id = 'tooltip';
+				document.body.appendChild(tooltip);
+			}
+
+			if (intersects.length > 0) {
+				const objeto = intersects[0].object;
+				const info = partesCelula.find(
+					parte => parte.id === objeto.name
+				);
+
+				// Si cambió de objeto
+				if (objetoHover !== objeto) {
+					// Restaurar color anterior
+					if (objetoHover && materialOriginal) {
+						if(objetoHover.material.color.getHex() != 0xff0000){
+							objetoHover.material.color.copy(materialOriginal);
+						}
+					}
+					// Guardar color original
+					objetoHover = objeto;
+					materialOriginal = objeto.material.color.clone();
+					// Aplicar gris
+					objeto.material.color.set(0xaaaaaa);
+					tooltip.innerHTML = info?.nombre?.toUpperCase();
+				}
+
+				if(info){
+					tooltip.style.display = 'block';
+					tooltip.style.left = (event.clientX + 15) + 'px';
+					tooltip.style.top = (event.clientY + 15) + 'px';
+				}else{
+					tooltip.style.display = 'none';
+				}
+			} else {
+				// Restaurar último objeto
+				if (objetoHover && materialOriginal ) {
+					if(objetoHover.material.color.getHex() != 0xff0000){
+						objetoHover.material.color.copy(materialOriginal);
+					}
+				}
+				objetoHover = null;
+				materialOriginal = null;
+				tooltip.style.display = 'none';
+			}
+		});
+
+
+
+		// Animación
+		function animate() {
+			requestAnimationFrame(animate);
+			controls.update();
+			actualizarModal();
+			renderer.render(scene, camera);
+		}
+		animate();
+
+		// Resize responsive
+		window.addEventListener('resize', () => {
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+		});
+
+
+		window.addEventListener('click', (event) => {
+			// Si el clic fue dentro del modal, salir
+			if (event.target.closest('.modal-flotante')) {
+				return;
+			}
+
+			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+			mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+			raycaster.setFromCamera(mouse, camera);
+
+			const intersects = raycaster.intersectObjects(objetosClickeables, true);
+
+			if (intersects.length > 0) {
+				const objetoActual = intersects[0].object;
+
+				// Si hay un objeto seleccionado anteriormente, restaurar su color
+				if (objetoSeleccionado){
+					objetoSeleccionado.material = objetoSeleccionado.materialOriginal.clone();
+				}
+
+				// Guardar el nuevo objeto seleccionado
+				objetoSeleccionado = objetoActual;
+				window.speechSynthesis.cancel();
+				// Guardar el color original solo si es un nuevo objeto
+				colorOriginal = objetoActual.materialOriginal.clone();
+				objetoActual.material.color.set(0xff0000);
+                posicionarModalEnPunto();
+				tooltip.style.display = 'none';
+			}
+		});
+
+		$('#cerrar-modal').click(function() {
+			window.speechSynthesis.cancel();
+			document.getElementById('miModal').style.display = 'none';
+			if (objetoSeleccionado){
+				objetoSeleccionado.material = objetoSeleccionado.materialOriginal.clone();
+			}
+		});
+
+		const emularScroll = (factor) => {
+			const direccion = new THREE.Vector3();
+			direccion.subVectors(camera.position, controls.target).normalize(); // Dirección de la cámara
+
+			// Calcular nueva posición
+			const nuevaPosicion = camera.position.clone().addScaledVector(direccion, factor);
+
+			// Calcular la nueva distancia a target
+			const distancia = nuevaPosicion.distanceTo(controls.target);
+			console.log(distancia);
+
+			if (factor > 0) {
+				if (distancia < 718) {
+					camera.position.copy(nuevaPosicion);
+					controls.update();
+				}
+			} else {
+				if (distancia > 500) {
+					camera.position.copy(nuevaPosicion);
+					controls.update();
+				}
+			}
+		};
+
+		const controlesMovimiento = {
+			subir: () => camera.position.y += 50,
+			bajar: () => camera.position.y -= 50,
+			izquierda: () => camera.position.x -= 50,
+			derecha: () => camera.position.x += 50,
+			acercar: () => emularScroll(-50),
+			alejar: () => emularScroll(50),
+		};
+
+		const gui = new GUI();
+		const carpetaMovimiento = gui.addFolder('Mover cámara');
+
+		carpetaMovimiento.add(controlesMovimiento, 'subir').name('<i class="fa-solid fa-arrow-up"></i> Subir');
+		carpetaMovimiento.add(controlesMovimiento, 'bajar').name('<i class="fa-solid fa-arrow-down"></i> Bajar');
+		carpetaMovimiento.add(controlesMovimiento, 'izquierda').name('<i class="fa-solid fa-arrow-left"></i> Izquierda');
+		carpetaMovimiento.add(controlesMovimiento, 'derecha').name('<i class="fa-solid fa-arrow-right"></i> Derecha');
+		carpetaMovimiento.add(controlesMovimiento, 'acercar').name('<i class="fa-solid fa-arrow-up"></i> Acercar');
+		carpetaMovimiento.add(controlesMovimiento, 'alejar').name('<i class="fa-solid fa-arrow-down"></i> Alejar');
+
+		carpetaMovimiento.open();
+
+		setTimeout(() => {
+			document.getElementsByClassName('title')[0].innerHTML = 'Controles del sistema';
+		}, 500);
+
+
+		const loaderFondo = new THREE.TextureLoader();
+		loaderFondo.load('images_celula/fondo_vegetal.png', function (texture) {
+			texture.encoding = THREE.sRGBEncoding; // asegura colores reales
+			texture.colorSpace = THREE.SRGBColorSpace; // si usas Three.js r152+
+			scene.background = texture;
+		});
+
+
+		document.addEventListener('mousedown', () => {
+			document.body.classList.add('grabbing');
+		});
+
+		document.addEventListener('mouseup', () => {
+			document.body.classList.remove('grabbing');
+		});
+
+		// Por si se suelta el clic fuera del navegador
+		document.addEventListener('mouseleave', () => {
+			document.body.classList.remove('grabbing');
+		});
+	</script>
+</body>
+
+</html>

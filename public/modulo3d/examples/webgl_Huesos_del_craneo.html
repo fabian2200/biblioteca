@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Modelo 3D del sistema digestivo</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link type="text/css" rel="stylesheet" href="main.css">
+    <link href="../bootstrap/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap JS (requerido para modales) -->
+    <script src="../bootstrap/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="../bootstrap/style.css" />
+    <link rel="stylesheet" href="../fontawesome/css/all.min.css">
+    <script src="../jquery-3.7.1.min.js"></script>
+    <link rel="stylesheet" href="./css/index.css">
+</head>
+
+<body>
+
+    <div id="labels-container"></div>
+
+    <!-- Controls display for spaceship view -->
+    <div id="spaceship-controls" class="controls-display">
+        <div class="controls-title">Controles de la Nave:</div>
+        <div class="controls-container">
+            <div class="control-item">
+                <span class="key-symbol">W</span> Adelante
+            </div>
+            <div class="control-item"><span class="key-symbol">S</span> Atrás</div>
+            <div class="control-item">
+                <span class="key-symbol">A</span> Izquierda
+            </div>
+            <div class="control-item">
+                <span class="key-symbol">D</span> Derecha
+            </div>
+            <div class="control-item"><span class="key-symbol">Q</span> Arriba</div>
+            <div class="control-item"><span class="key-symbol">E</span> Abajo</div>
+            <div class="control-item">
+                <span class="key-symbol">⬆️⬇️⬅️➡️</span> Rotar
+            </div>
+        </div>
+    </div>
+
+    <!-- Controls display for system view -->
+	<div id="system-controls" class="controls-display">
+		<div class="controls-title">Controles del Sistema:</div>
+		<div class="control-item">
+			<span class="key-symbol">🖱️</span> Click izquierdo + Arrastrar para rotar cámara
+		</div>
+		<div class="control-item">
+			<span class="key-symbol">🖱️</span> Click derecho + arrastrar para mover el Modelo
+		</div>
+	</div>
+
+    <!-- Modal de información del planeta -->
+    <div id="miModal" class="modal-flotante">
+        <div class="d-flex justify-content-end align-items-center gap-3" id="botones-modal">
+			<span id="boton-hablar" ><i class="fa-solid fa-volume-high"></i></span>
+			<span class="cerrar-modal" id="cerrar-modal"><i style="color: red; font-size: 40px;" class="fa-solid fa-xmark"></i></span>
+		</div>
+        <h3 id="modal-nombre-texto">Cargando...</h3>
+        <!-- Botones de las Pestañas -->
+        <div class="pestanas-container">
+            <button class="btn-pestana activa" onclick="cambiarPestana(event, 'tab-descripcion')">Descripción</button>
+            <button class="btn-pestana" onclick="cambiarPestana(event, 'tab-funciones')">Funciones</button>
+        </div>
+    
+        <div id="tab-descripcion" class="contenido-pestana activa">
+            <p id="modal-descripcion-texto">Cargando...</p>
+        </div>
+        <div id="tab-funciones" class="contenido-pestana">
+            <p id="modal-funciones-texto">Cargando...</p>
+        </div>
+    </div>
+
+    <div id="container"></div>
+
+    <div id="loading-container">
+        <div class="loading-container-content">
+            <div id="loading-text">Cargando modelo</div>
+            <div class="contenedor" style="position: relative;">
+                <span id="barra-text">0%</span>
+                <div id="barra" class="barra">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info" style="font-size: 18px; padding: 8px;">Modelo 3D del cráneo</div>
+
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "../build/three.module.js",
+                "three/addons/": "./jsm/"
+            }
+        }
+    </script>
+
+    <script src="./js/index.js"></script>
+
+    <script type="module">
+
+        var partesCraneo = [
+            {
+                "id": "etmoides",
+                "nombre": "Hueso Etmoides",
+                "descripcion": "<p>El hueso etmoides es un hueso impar, del cráneo que esta insertado en la escotadura etmoidal del hueso frontal, y ubicado por delante del  Hueso esfenoides.</p><p>Está formado por láminas delgadas de tejido óseo compacto, y tejido esponjoso a nivel de la apófisis crista galli. Presenta una porción horizontal, la lamina cribosa, una porción vertical correspondiente a la lamina perpendicular, y los laberintos etmoidales (masas laterales), que se desprenden de los extremos de la lamina cribosa.</p>",
+                "referencia": "<a target='_blank' href='https://dolopedia.com/categoria/huesos-de-la-cara'>https://dolopedia.com/categoria/huesos-de-la-cara</a>"
+            },
+            {
+                "id": "frontal",
+                "nombre": "Hueso Frontal",
+                "descripcion": "<p>El hueso frontal es un hueso plano que forma la base ósea de la región frontal, en la región más anterior del cráneo y que presenta una superfície convexa anterior, que corresponde a la frente, y otra cóncava posterior, que forma las fosas donde se albergan los lóbulos frontales del cerebro.</p><p>Se une por detrás y por los lados con los huesos parietales y hueso esfenoides, y por abajo con los huesos cigomáticos, maxilares superiores, propios de la nariz y hueso etmoides, constituyendo el techo de la cavidad orbitaria.</p>",
+                "referencia": "<a target='_blank' href='https://dolopedia.com/categoria/huesos-de-la-cara'>https://dolopedia.com/categoria/huesos-de-la-cara</a>"
+            },
+            {
+                "id": "concha_inferior",
+                "nombre": "Concha Nasal Inferior",
+                "descripcion": "<p>Hueso del interior de la cavidad nasal que ayuda a filtrar, calentar y humedecer el aire inhalado.</p>",
+                "referencia": "<a target='_blank' href='https://dolopedia.com/categoria/huesos-de-la-cara'>https://dolopedia.com/categoria/huesos-de-la-cara</a>"
+            },
+            {
+                "id": "lagrimal1",
+                "nombre": "Hueso Lacrimal Izquierdo",
+                "descripcion": "<p>El hueso lacrimal es un pequeño hueso cuadrilátero ubicado en la pared medial de la órbita, por delante de la lámina orbitaria del laberinto etmoidal, que participa en la formación del conducto nasolagrimal y en la delimitación de la fosa lagrimal, facilitando el drenaje de las lágrimas hacia la cavidad nasal a través del surco lacrimal, una depresión en su cara lateral que, junto con el maxilar, forma el conducto nasolagrimal; la cresta lacrimal posterior, un borde óseo que sirve de inserción al septo orbitario y delimita la fosa del saco lagrimal; y el hámulo lacrimal, una pequeña prolongación ósea en la parte inferior de la cresta lagrimal posterior que contribuye a la estructura del conducto lagrimal.</p>",
+                "referencia": "<a target='_blank' href='https://www.imaios.com/es/e-anatomy/estructuras-anatomicas/hueso-lacrimal-1536913732#from=2'>https://www.imaios.com/es/e-anatomy/estructuras-anatomicas/hueso-lacrimal-1536913732#from=2</a>"
+            },
+            {
+                "id": "palatino1",
+                "nombre": "Hueso Palatino Izquierdo",
+                "descripcion": "<p>El hueso palatino es un hueso  pequeño , par ,  perteneciente a los  huesos de la cara que se ubica por detrás y por dentro de los maxilares superiores, formando el paladar duro o techo de la boca y, a su vez, una parte del piso de las fosas nasales.</p><p>Se encuentra entre el maxilar  y  el   hueso esfenoides. Ocupa junto con los maxilares superiores (de los cuales parecen ser la continuación hacia atrás) la porción más posterior de la cara. Concurren a la formación de la bóveda palatina, de las fosas nasales, de la órbita y de la fosa pterigomaxilar. Se compone fundamentalmente de dos porciones: una porción horizontal y una vertical, con dos caras y cuatro bordes cada una de ellas.</p>",
+                "referencia": "<a target='_blank' href='https://dolopedia.com/categoria/huesos-de-la-cara'>https://dolopedia.com/categoria/huesos-de-la-cara</a>"
+            },
+            {
+                "id": "parietal1",
+                "nombre": "Hueso Parietal Izquierdo",
+                "descripcion": "<p>El hueso parietal es un hueso par, plano, cuadrangular, situado en la parte lateral del cráneo, por arriba del temporal, por detrás del frontal.</p><p>El hueso parietal presenta para su estudio 2 caras (interna y externa), 4 bordes (anterior, posterior, superior e inferior) y 4 ángulos (anterosuperior, anteroinferior, posterosuperior y posteroinferior).</p>",
+                "referencia": "<a target='_blank' href='https://www.imaios.com/es/e-anatomy/estructuras-anatomicas/hueso-parietal-1536907604#from=2'>https://www.imaios.com/es/e-anatomy/estructuras-anatomicas/hueso-parietal-1536907604#from=2</a>"
+            },
+            {
+                "id": "temporal1",
+                "nombre": "Hueso Temporal Izquierdo",
+                "descripcion": "<p>El hueso temporal es un hueso impar e irregular, situado en la parte lateral, media e inferior del cráneo</p><p>Está situado posterior al hueso esfenoides, anterior y lateral al hueso occipital e inferior al hueso parietal</p><p>Está constituido por la unión de tres piezas óseas embrionarias, que en el adulto se sueldan entre sí: <ul><li>La escama: forma parte de base y bóveda craneal</li><li>El hueso timpánico</li><li>La porción petrosa o peñasco.</li></ul></p>",
+                "referencia": "<a target='_blank' href='https://dolopedia.com/articulo/hueso-temporal'>https://dolopedia.com/articulo/hueso-temporal</a>"
+            },
+            {
+                "id": "sigomatico1",
+                "nombre": "Hueso Cigomático Izquierdo",
+                "descripcion": "<p>Es un hueso par, corto y compacto, de forma cuadrilátera , que forma el pómulo de la cara y parte de la órbita . Presenta un saliente o proceso cigomático que se une hacia atrás con el proceso cigomático del  hueso temporal. Se articulan con el  hueso temporal, el hueso maxilar superior, el  hueso esfenoides y el hueso frontal.   </p>",
+                "referencia": "<a target='_blank' href='https://dolopedia.com/articulo/hueso-cigomatico-o-malar'>https://dolopedia.com/articulo/hueso-cigomatico-o-malar</a>"
+            },
+            {
+                "id": "maxilar",
+                "nombre": "Maxilar",
+                "descripcion": "<p> Hueso par, corto, de forma   de pirámide truncada, que se sitúa en la cara, por encima de la cavidad bucal, por debajo de la cavidad orbitaria y lateralmente a las cavidades nasales, formando parte de las tres cavidades.</p><p>Se articula con el del lado contrario y presenta una gran cavidad en su interior: el seno maxilar. Otra  de sus características es su amplio borde alveolar donde se implantan las piezas dentarias superiores. Tiene forma de pirámide truncada en la que se pueden distinguir cuatro caras, una superior, una anterior y otra posterior, que convergen en un vértice truncado, y una medial, que corresponde a la base de la pirámide.</p><p>Este hueso se encuentra en el centro de la cara, debajo del hueso frontal y del hueso etmoides. Se articula con estos huesos y con el maxilar superior del otro lado (contralateral), el cigomático (o malar o pómulo), el  hueso lagrimal o unguis, el hueso nasal, el  hueso vómer, la porción horizontal del  hueso palatino y el  hueso cornete o concha nasal inferior.</p>",
+                "referencia": "<a target='_blank' href='https://dolopedia.com/articulo/hueso-maxilar-superior'>https://dolopedia.com/articulo/hueso-maxilar-superior</a>"
+            },
+            {
+                "id": "occipital",
+                "nombre": "Hueso Occipital",
+                "descripcion": "<p>El hueso occipital es el hueso más posterior del cráneo.   Este hueso es plano e irregular, de osificación mixta.</p><p>Presenta una región plana superior, llamada Escama del Occipital y una región irregular e inferior denominada ?Basilar?.Esta región contiene a los cóndilos del occipital, a la fosa condílea anterior (donde está el agujero de salida del canal del nervio hipogloso), el tubérculo faríngeo, la fosa navicular, la fosita faríngea, el proceso yugular (el cual también se observa p or endocráneo) y la escotadura yugular.</p><p>El hueso Occipital se articula con el hueso parietal, el hueso esfenoides, los huesos temporales y el hueso atlas.</p>",
+                "referencia": "<a target='_blank' href='https://dolopedia.com/categoria/hueso-occipital'>https://dolopedia.com/categoria/hueso-occipital</a>"
+            },
+            {
+                "id": "lagrimal2",
+                "nombre": "Hueso Lacrimal Derecho",
+                "descripcion": "<p>El hueso lacrimal es un pequeño hueso cuadrilátero ubicado en la pared medial de la órbita, por delante de la lámina orbitaria del laberinto etmoidal, que participa en la formación del conducto nasolagrimal y en la delimitación de la fosa lagrimal, facilitando el drenaje de las lágrimas hacia la cavidad nasal a través del surco lacrimal, una depresión en su cara lateral que, junto con el maxilar, forma el conducto nasolagrimal; la cresta lacrimal posterior, un borde óseo que sirve de inserción al septo orbitario y delimita la fosa del saco lagrimal; y el hámulo lacrimal, una pequeña prolongación ósea en la parte inferior de la cresta lagrimal posterior que contribuye a la estructura del conducto lagrimal.</p>",
+                "referencia": "<a target='_blank' href='https://www.imaios.com/es/e-anatomy/estructuras-anatomicas/hueso-lacrimal-1536913732#from=2'>https://www.imaios.com/es/e-anatomy/estructuras-anatomicas/hueso-lacrimal-1536913732#from=2</a>"
+            },
+            {
+                "id": "nasal",
+                "nombre": "Hueso Nasal",
+                "descripcion": "<p>Los huesos nasales o huesos propios de la nariz son dos pequeños huesos simétricos  que pertenecen a los  huesos de la cara</p><p>Estos huesos se encuentran uno al lado del otro entre los procesos frontales de los huesos maxilares y se unen para formar el puente de la nariz.</p><p>Estos huesos sirven de inserción a los tejidos cartilaginosos que son los principales responsables de la forma de la nariz.</p>",
+                "referencia": "<a target='_blank' href='https://dolopedia.com/categoria/huesos-nasales'>https://dolopedia.com/categoria/huesos-nasales</a>"
+            },
+            {
+                "id": "palatino2",
+                "nombre": "Hueso Palatino Derecho",
+                "descripcion": "<p>El hueso palatino es un hueso  pequeño , par ,  perteneciente a los  huesos de la cara que se ubica por detrás y por dentro de los maxilares superiores, formando el paladar duro o techo de la boca y, a su vez, una parte del piso de las fosas nasales.</p><p>Se encuentra entre el maxilar  y  el   hueso esfenoides. Ocupa junto con los maxilares superiores (de los cuales parecen ser la continuación hacia atrás) la porción más posterior de la cara. Concurren a la formación de la bóveda palatina, de las fosas nasales, de la órbita y de la fosa pterigomaxilar. Se compone fundamentalmente de dos porciones: una porción horizontal y una vertical, con dos caras y cuatro bordes cada una de ellas.</p>",
+                "referencia": "<a target='_blank' href='https://dolopedia.com/categoria/huesos-de-la-cara'>https://dolopedia.com/categoria/huesos-de-la-cara</a>"
+            },
+            {
+                "id": "parietal2",
+                "nombre": "Hueso Parietal Derecho",
+                "descripcion": "<p>El hueso parietal es un hueso par, plano, cuadrangular, situado en la parte lateral del cráneo, por arriba del temporal, por detrás del frontal.</p><p>El hueso parietal presenta para su estudio 2 caras (interna y externa), 4 bordes (anterior, posterior, superior e inferior) y 4 ángulos (anterosuperior, anteroinferior, posterosuperior y posteroinferior).</p>",
+                "referencia": "<a target='_blank' href='https://dolopedia.com/categoria/huesos-de-la-cara'>https://dolopedia.com/categoria/huesos-de-la-cara</a>"
+            },
+            {
+                "id": "temporal2",
+                "nombre": "Hueso Temporal Derecho",
+                "descripcion": "<p>El hueso temporal es un hueso impar e irregular, situado en la parte lateral, media e inferior del cráneo</p><p>Está situado posterior al hueso esfenoides, anterior y lateral al hueso occipital e inferior al hueso parietal</p><p>Está constituido por la unión de tres piezas óseas embrionarias, que en el adulto se sueldan entre sí: <ul><li>La escama: forma parte de base y bóveda craneal</li><li>El hueso timpánico</li><li>La porción petrosa o peñasco.</li></ul></p>",
+                "referencia": "<a target='_blank' href='https://dolopedia.com/articulo/hueso-temporal'>https://dolopedia.com/articulo/hueso-temporal</a>"
+            },
+            {
+                "id": "sigomatico2",
+                "nombre": "Hueso Cigomático Derecho",
+                "descripcion": "<p>Es un hueso par, corto y compacto, de forma cuadrilátera , que forma el pómulo de la cara y parte de la órbita . Presenta un saliente o proceso cigomático que se une hacia atrás con el proceso cigomático del  hueso temporal. Se articulan con el  hueso temporal, el hueso maxilar superior, el  hueso esfenoides y el hueso frontal.   </p>",
+                "referencia": "<a target='_blank' href='https://dolopedia.com/categoria/huesos-de-la-cara'>https://dolopedia.com/categoria/huesos-de-la-cara</a>"
+            },
+            {
+                "id": "esfenoides",
+                "nombre": "Hueso Esfenoides",
+                "descripcion": "<p>El hueso esfenoides  es un hueso  impar, central y simétrico, que ocupa la parte anterior y media de la base del  cráneo. En él se encuentra la silla turca donde se aloja la glándula hipófisis.</p><p>Está situado entre el hueso etmoides y el Hueso frontal , que se encuentran por delante, y el hueso occipital que está por detrás.</p>",
+                "referencia": "<a target='_blank' href='https://dolopedia.com/categoria/hueso-esfenoides'>https://dolopedia.com/categoria/hueso-esfenoides</a>"
+            },
+            {
+                "id": "cornete",
+                "nombre": "Vómer",
+                "descripcion": "<p>El hueso vómer es un hueso impar y central perteneciente a los  huesos de la cara que forma el tabique nasal óseo, junto con el   hueso etmoides y divide la nariz en fosas nasales izquierda y derecha.</p><p>El vómer se articula con:<ul><li>1) Con el borde superior del pico del hueso esfenoides.</li><li>2) Con la cresta del hueso palatino.</li><li>3) Con la cresta nasal del hueso maxilar superior.</li><li>4) Con la parte posteroinferior de la lamina perpendicular del hueso etmoides.</li><li>5) Con el cartílago septal.</li></ul></p>",
+                "referencia": "<a target='_blank' href='https://dolopedia.com/categoria/hueso-vomer'>https://dolopedia.com/categoria/hueso-vomer</a>"
+            },
+            {
+                "id": "manibula",
+                "nombre": "Mandíbula",
+                "descripcion": "<p>El hueso maxilar inferior o mandíbula  es un hueso impar  , plano  y simétrico  en forma de herradura  perteneciente a los  huesos de la cara situado en la pared anterior, posterior e inferior de la cara.</p><p>Es un hueso con un cuerpo en forma cóncava hacia atrás , semejante a una herradura . Sus extremos se dirigen hacia arriba formando con el cuerpo un ángulo casi recto  .  Determina la configuración de la parte inferior del macizo facial </p>",
+                "referencia": "<a target='_blank' href='https://dolopedia.com/articulo/hueso-maxilar-inferior-o-mandibula'>https://dolopedia.com/articulo/hueso-maxilar-inferior-o-mandibula</a>"   
+            },
+            {
+                "id": "dientes",
+                "nombre": "Dientes",
+                "descripcion": "<p>Estructuras calcificadas que permiten cortar, desgarrar y moler los alimentos. Fundamentales para la digestión inicial.</p><p>Aunque son estructuras duras y mineralizadas, se diferencian por su composición y capacidad de regeneración. Los dientes están formados por tejidos como el esmalte, la dentina y la pulpa, mientras que los huesos están compuestos de colágeno y minerales. La principal diferencia es que los huesos pueden sanar y regenerarse tras una fractura, pero los dientes no pueden curarse por sí mismos y requieren intervención de un dentista.   </p>",
+                "referencia": "<a target='_blank' href='https://dolopedia.com/categoria/dientes'>https://dolopedia.com/categoria/dientes</a>"
+            },
+            {
+                "id": "dientes002",
+                "nombre": "Dientes",
+                "descripcion": "<p>Estructuras calcificadas que permiten cortar, desgarrar y moler los alimentos. Fundamentales para la digestión inicial.</p><p>Aunque son estructuras duras y mineralizadas, se diferencian por su composición y capacidad de regeneración. Los dientes están formados por tejidos como el esmalte, la dentina y la pulpa, mientras que los huesos están compuestos de colágeno y minerales. La principal diferencia es que los huesos pueden sanar y regenerarse tras una fractura, pero los dientes no pueden curarse por sí mismos y requieren intervención de un dentista.   </p>",
+                "referencia": "<a target='_blank' href='https://dolopedia.com/categoria/dientes'>https://dolopedia.com/categoria/dientes</a>"
+            }
+        ];
+
+
+        import * as THREE from 'three';
+        import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+        let scene, camera, renderer, controls;
+
+        let mixer, action, clip;
+        let animationDuration = 0;
+        const clock = new THREE.Clock();
+
+
+        // Inicializar escena
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x222222);
+
+        // Cámara
+        camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 5000);
+        camera.position.set(50, -50, 750);
+        camera.updateProjectionMatrix();
+
+        // Renderizador
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Controles orbitales
+        controls = new OrbitControls(camera, renderer.domElement);
+        const distanciaInicial = camera.position.length();
+
+        controls.maxDistance = distanciaInicial;
+        controls.minDistance = 50;
+        // Luz
+        const light = new THREE.HemisphereLight(0xffffff, 0x444444, 4.0); // el tercer parámetro es la intensidad
+        light.position.set(-120, 120, 120);
+        scene.add(light);
+
+        // Cargar modelo GLB
+        const loader = new GLTFLoader();
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        const objetosClickeables = []; // Aquí guardarás los nodos (meshes)
+        let objetoSeleccionado = null;
+        let colorOriginal = null;
+
+        window.addEventListener('click', (event) => {
+            // Si el clic fue dentro del modal, salir
+            if (event.target.closest('.modal-flotante')) {
+                return;
+            }
+
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+
+            const intersects = raycaster.intersectObjects(objetosClickeables, true);
+
+            if (intersects.length > 0) {
+                const objeto = intersects[0].object;
+                const info = partesCraneo.find(parte => parte.id === objeto.name);
+
+                if (objetoSeleccionado){
+                    objetoSeleccionado.material = objetoSeleccionado.materialOriginal.clone();
+                }
+
+                // Guardar el nuevo objeto seleccionado
+                objetoSeleccionado = objeto;
+                window.speechSynthesis.cancel();
+                // Guardar el color original solo si es un nuevo objeto
+                colorOriginal = objeto.materialOriginal.clone();
+                objeto.material.color.set(0xff0000);
+                posicionarModalEnPunto();
+                tooltip.style.display = 'none';
+            }
+		});
+
+		function posicionarModalEnPunto() {
+            if (!objetoSeleccionado) return;
+
+            const wp = new THREE.Vector3();
+
+            // Obtener posición global del objeto
+            objetoSeleccionado.getWorldPosition(wp);
+
+            // Convertir a coordenadas de pantalla
+            wp.project(camera);
+
+            const x = (wp.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-wp.y * 0.5 + 0.5) * window.innerHeight;
+
+            const modal = document.getElementById('miModal');
+
+            modal.style.display = 'block';
+            modal.style.position = 'absolute';
+            modal.style.left = `${x}px`;
+            modal.style.top = `${y}px`;
+
+            var info = null;
+            info = partesCraneo.find(parte => parte.id === objetoSeleccionado.name);
+            document.getElementById('modal-nombre-texto').innerHTML = info.nombre;
+            document.getElementById('modal-descripcion-texto').innerHTML = info.descripcion;
+            document.getElementById('modal-funciones-texto').innerHTML = info.funciones;
+        }
+
+        function actualizarModal() {
+            if (!objetoSeleccionado) return;
+            // Posición mundial del objeto
+            const posicion = new THREE.Vector3();
+            objetoSeleccionado.getWorldPosition(posicion);
+
+            // Convertir a coordenadas de pantalla
+            posicion.project(camera);
+
+            const x = (posicion.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-posicion.y * 0.5 + 0.5) * window.innerHeight;
+
+            const modal = document.getElementById('miModal');
+            modal.style.left = `${x}px`;
+            modal.style.top = `${y}px`;
+        }
+
+        
+        let objetoHover = null;
+		var tooltip = null;
+		let materialOriginal = null;
+		window.addEventListener('mousemove', (event) => {
+			//verificar si el color es rojo
+			
+			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+			mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+			raycaster.setFromCamera(mouse, camera);
+
+			const intersects = raycaster.intersectObjects(
+				objetosClickeables,
+				true
+			);
+
+			if (!tooltip) {
+				tooltip = document.createElement('div');
+				tooltip.id = 'tooltip';
+				document.body.appendChild(tooltip);
+			}
+
+			if (intersects.length > 0) {
+				const objeto = intersects[0].object;
+				const info = partesCraneo.find(
+					parte => parte.id === objeto.name
+				);
+
+				// Si cambió de objeto
+				if (objetoHover !== objeto) {
+					// Restaurar color anterior
+					if (objetoHover && materialOriginal) {
+						if(objetoHover.material.color.getHex() != 0xff0000){
+							objetoHover.material.color.copy(materialOriginal);
+						}
+					}
+					// Guardar color original
+					objetoHover = objeto;
+					materialOriginal = objeto.material.color.clone();
+					// Aplicar gris
+					objeto.material.color.set(0xaaaaaa);
+					tooltip.innerHTML = info?.nombre?.toUpperCase();
+				}
+
+				if(info){
+					tooltip.style.display = 'block';
+					tooltip.style.left = (event.clientX + 15) + 'px';
+					tooltip.style.top = (event.clientY + 15) + 'px';
+				}else{
+					tooltip.style.display = 'none';
+				}
+			} else {
+				// Restaurar último objeto
+				if (objetoHover && materialOriginal ) {
+					if(objetoHover.material.color.getHex() != 0xff0000){
+						objetoHover.material.color.copy(materialOriginal);
+					}
+				}
+				objetoHover = null;
+				materialOriginal = null;
+				tooltip.style.display = 'none';
+			}
+		});
+
+        $('#cerrar-modal').click(function() {
+			window.speechSynthesis.cancel();
+			document.getElementById('miModal').style.display = 'none';
+			if (objetoSeleccionado){
+				objetoSeleccionado.material = objetoSeleccionado.materialOriginal.clone();
+			}
+		});
+
+
+
+        // Animación
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            actualizarModal();
+            const delta = clock.getDelta();
+            if (mixer) mixer.update(delta);
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Resize responsive
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+
+        const emularScroll = (factor) => {
+            const direccion = new THREE.Vector3();
+            direccion.subVectors(camera.position, controls.target).normalize(); // Dirección de la cámara
+
+            // Calcular nueva posición
+            const nuevaPosicion = camera.position.clone().addScaledVector(direccion, factor);
+
+            // Calcular la nueva distancia a target
+            const distancia = nuevaPosicion.distanceTo(controls.target);
+            console.log(distancia);
+
+            if (factor > 0) {
+                if (distancia < 737) {
+                    camera.position.copy(nuevaPosicion);
+                    controls.update();
+                }
+            } else {
+                if (distancia > 50) {
+                    camera.position.copy(nuevaPosicion);
+                    controls.update();
+                }
+            }
+        };
+
+
+        const controlesMovimiento = {
+            acercar: () => emularScroll(-50),
+            alejar: () => emularScroll(50),
+        };
+
+        const controlesRotacion = {
+            rotarX: () => { if (modeloCraneo) modeloCraneo.rotation.x += 0.1; },
+            rotarX_neg: () => { if (modeloCraneo) modeloCraneo.rotation.x -= 0.1; },
+            rotarY: () => { if (modeloCraneo) modeloCraneo.rotation.y += 0.1; },
+            rotarY_neg: () => { if (modeloCraneo) modeloCraneo.rotation.y -= 0.1; },
+        };
+
+        const moverCamara = {
+            arriba: () => { camera.position.y += 20; controls.target.y += 20; controls.update(); },
+            abajo: () => { camera.position.y -= 20; controls.target.y -= 20; controls.update(); },
+            izquierda: () => { camera.position.x -= 20; controls.target.x -= 20; controls.update(); },
+            derecha: () => { camera.position.x += 20; controls.target.x += 20; controls.update(); },
+            adelante: () => { camera.position.z -= 20; controls.target.z -= 20; controls.update(); },
+            atras: () => { camera.position.z += 20; controls.target.z += 20; controls.update(); },
+        };
+
+        const gui = new GUI();
+
+        const carpetaMovimiento = gui.addFolder('Mover cámara');
+        carpetaMovimiento.add(controlesMovimiento, 'acercar').name('Acercar <i class="fa-solid fa-plus"></i>');
+        carpetaMovimiento.add(controlesMovimiento, 'alejar').name('Alejar <i class="fa-solid fa-minus"></i>');
+
+        carpetaMovimiento.open();
+
+        const carpetaRotacion = gui.addFolder('Rotar modelo');
+
+        carpetaRotacion.add(controlesRotacion, 'rotarY').name('<i class="fa-solid fa-arrow-left"></i> Rotar');
+        carpetaRotacion.add(controlesRotacion, 'rotarY_neg').name('<i class="fa-solid fa-arrow-right"></i> Rotar');
+        carpetaRotacion.add(controlesRotacion, 'rotarX').name('<i class="fa-solid fa-arrow-up"></i> Rotar');
+        carpetaRotacion.add(controlesRotacion, 'rotarX_neg').name('<i class="fa-solid fa-arrow-down"></i> Rotar');
+
+        carpetaRotacion.open();
+
+        const carpetaMover = gui.addFolder('Mover cámara libre');
+        carpetaMover.add(moverCamara, 'arriba').name('Arriba <i class="fa-solid fa-arrow-up"></i>');
+        carpetaMover.add(moverCamara, 'abajo').name('Abajo <i class="fa-solid fa-arrow-down"></i>');
+        carpetaMover.add(moverCamara, 'izquierda').name('Izquierda <i class="fa-solid fa-arrow-left"></i>');
+        carpetaMover.add(moverCamara, 'derecha').name('Derecha <i class="fa-solid fa-arrow-right"></i>');
+
+        carpetaMover.open();
+
+
+        const controlesAnimacion = {
+            time: 0,
+            play: () => { if (action) { action.paused = false; action.play(); } },
+            pause: () => { if (action) action.paused = true; },
+        }
+
+        const carpetaAnimacion = gui.addFolder('Animación');
+
+
+        // slider (se agrega cuando cargues el GLB)
+        let sliderAnim;
+
+        setTimeout(() => {
+            document.getElementsByClassName('title')[0].innerHTML = 'Controles del sistema';
+        }, 500);
+
+
+        document.addEventListener('mousedown', () => {
+            document.body.classList.add('grabbing');
+        });
+
+        document.addEventListener('mouseup', () => {
+            document.body.classList.remove('grabbing');
+        });
+
+        // Por si se suelta el clic fuera del navegador
+        document.addEventListener('mouseleave', () => {
+            document.body.classList.remove('grabbing');
+        });
+
+        let modeloCraneo = null;
+        loader.load(
+            'models/mios/craneo.glb',
+            function (gltf) {
+                modeloCraneo = gltf.scene;
+                modeloCraneo.scale.set(17.5, 17.5, 17.5);
+                modeloCraneo.position.set(-150, -80, 0);
+                modeloCraneo.rotation.x = -0.1;
+                modeloCraneo.rotation.y = 0.0;
+
+                mixer = new THREE.AnimationMixer(modeloCraneo);
+
+                if (gltf.animations.length > 0) {
+                    const actions = [];
+                    gltf.animations.forEach((clip) => {
+                        const action = mixer.clipAction(clip);
+                        action.setLoop(THREE.LoopOnce);
+                        action.clampWhenFinished = true;
+                        action.play();
+                        action.paused = true;
+                        action.time = 0;
+                        mixer.update(0);
+                        actions.push(action);
+                    });
+
+                    sliderAnim = carpetaAnimacion
+                        .add(controlesAnimacion, "time", 0, 2.85, 0.01)
+                        .name("⏩ Expandir ")
+                        .onChange((value) => {
+                            actions.forEach((action) => {
+                                action.paused = true;
+                                action.time = Math.min(
+                                    value,
+                                    action.getClip().duration
+                                );
+                            });
+                            mixer.update(0);
+                        });
+                }
+
+                scene.add(modeloCraneo);
+
+                const box = new THREE.Box3().setFromObject(modeloCraneo);
+                const center = box.getCenter(new THREE.Vector3());
+
+                controls.target.copy(center);
+                camera.lookAt(center);
+                controls.update();
+
+                modeloCraneo.traverse((child) => {
+                    if (child.isMesh) {
+                        child.material = child.material.clone();
+                        child.materialOriginal = child.material.clone();
+                        objetosClickeables.push(child);
+                    }
+                });
+            },
+            function (xhr) {
+                const porcentaje = (xhr.loaded / xhr.total) * 100;
+                document.getElementById('barra').style.width =  porcentaje + '%';
+                document.getElementById('barra-text').innerHTML = porcentaje.toFixed(2) + '%';
+
+                if (xhr.loaded === xhr.total) {
+                    setTimeout(() => {
+                        document.getElementById( 'loading-container').style.display = 'none';
+                    }, 2000);
+                }
+            },
+            function (error) {
+                console.error(
+                    'Error al cargar el modelo .glb', error
+                );
+            }
+        );
+
+
+
+    </script>
+</body>
+
+</html>

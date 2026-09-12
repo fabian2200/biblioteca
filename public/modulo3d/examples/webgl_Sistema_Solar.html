@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Sistema Solar</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<link type="text/css" rel="stylesheet" href="main.css">
+	<link href="../bootstrap/bootstrap.min.css" rel="stylesheet">
+	<!-- Bootstrap JS (requerido para modales) -->
+	<script src="../bootstrap/bootstrap.bundle.min.js"></script>
+	<link rel="stylesheet" href="../bootstrap/style.css" />
+	<script src="../jquery-3.7.1.min.js"></script>
+	<link rel="stylesheet" href="../fontawesome/css/all.min.css">
+	<link rel="stylesheet" href="./css/index.css">
+
+	<style>
+		.modal-subtitle {
+			font-size: 25px;
+			font-weight: bold;
+			margin-top: 10px;
+			margin-bottom: 5px;
+			color: #1feec5;
+		}
+
+		.modal-content {
+			position: relative;
+			display: flex;
+			flex-direction: column;
+			width: 100%;
+			color: var(--bs-modal-color);
+			pointer-events: auto;
+			background-color: #000000db;
+			border: 3px solid white;
+			background-clip: padding-box;
+			border-radius: 21px;
+			padding: 10px;
+			outline: 0;
+			color: white;
+		}
+
+		#planetModalClose {
+			color: white;
+			background-color: transparent;
+			border: none;
+			font-size: 31px;
+			font-weight: bold;
+			margin-bottom: 5px;
+			color: #ffffff;
+			cursor: pointer;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			width: 50px;
+			height: 50px;
+			border-radius: 50%;
+			border: 1px solid white;
+			padding-bottom: 7px;
+		}
+
+		.modal-text {
+			font-size: 17px;
+			margin-bottom: 10px;
+		}
+	</style>
+	<style>
+		a {
+			color: #2983ff;
+		}
+	</style>
+</head>
+
+<body>
+
+	<div id="labels-container"></div>
+
+	<div class="info">Modelo 3D del Sistema Solar</div>
+	<div id="labels-container"></div>
+
+	<!-- Controls display for spaceship view -->
+	<div id="spaceship-controls" class="controls-display">
+		<div class="controls-title">Controles de la Nave:</div>
+		<div class="controls-container">
+			<div class="control-item">
+				<span class="key-symbol">W</span> Adelante
+			</div>
+			<div class="control-item"><span class="key-symbol">S</span> Atrás</div>
+			<div class="control-item">
+				<span class="key-symbol">A</span> Izquierda
+			</div>
+			<div class="control-item">
+				<span class="key-symbol">D</span> Derecha
+			</div>
+			<div class="control-item"><span class="key-symbol">Q</span> Arriba</div>
+			<div class="control-item"><span class="key-symbol">E</span> Abajo</div>
+			<div class="control-item">
+				<span class="key-symbol">⬆️⬇️⬅️➡️</span> Rotar
+			</div>
+		</div>
+	</div>
+
+	 <!-- Controls display for system view -->
+	 <div id="system-controls" class="controls-display">
+		<div class="controls-title">Controles del Sistema:</div>
+		<div class="control-item">
+			<span class="key-symbol">🖱️</span> Click izquierdo + Arrastrar para rotar cámara
+		</div>
+		<div class="control-item">
+			<span class="key-symbol">🖱️</span> Click derecho + arrastrar para mover el Modelo
+		</div>
+	</div>
+
+	<!-- Modal de información del planeta -->
+	<div class="modal fade" id="planetModal" tabindex="-1" aria-labelledby="planetModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h3 id="planetModalLabel"></h3>
+					<button type="button" id="planetModalClose" data-bs-dismiss="modal" aria-label="Cerrar"> x </button>
+				</div>
+				<div class="modal-body">
+					<h4 class="modal-subtitle">Descripción</h4>
+					<p class="modal-text" id="planetModalDescription"></p>
+					<h4 class="modal-subtitle">Características</h4>
+					<ul class="modal-text" id="planetModalCharacteristics"></ul>
+					<h4 class="modal-subtitle">Datos físicos</h4>
+					<ul class="modal-text" id="planetModalPhysicalData"></ul>
+					<h4 class="modal-subtitle">Curiosidades</h4>
+					<ul class="modal-text" id="planetModalCuriosities"></ul>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="container"></div>
+
+
+	<script type="importmap">
+			{
+				"imports": {
+					"three": "./cdn/three.module.js",
+					"three/OrbitControls": "./cdn/OrbitControls.js",
+					"three/GUI": "./cdn/lil-gui.module.min.js",
+					"three/OBJLoader": "./cdn/OBJLoader.js",
+					"three/GLTFLoader": "./cdn/GLTFLoader.js"
+				}
+			}
+		</script>
+
+	<script type="module">
+
+		import * as THREE from 'three';
+		import { OrbitControls } from 'three/OrbitControls';
+		import { GUI } from 'three/GUI';
+	
+		const raycaster = new THREE.Raycaster();
+		const mouse = new THREE.Vector2();
+
+		let scene, renderer;
+		let camera, spaceshipCamera, currentCamera;
+		let camcontrols1;
+		let planets = [];
+		let ship;
+		let gui;
+		let options = {
+			cameraView: 'sistema', // default view is main camera,
+			planetSpeed: 1.0,
+		};
+
+		let cubeCamera;
+
+		const planetInfo = [
+			{
+				nombre: "Sol",
+				descripcion: "El Sol, nuestra estrella, se sitúa en el centro del sistema solar y rige todo lo que sucede en su interior. Por ello, no es de extrañar que decenas de culturas a lo largo y ancho de nuestro planeta y durante el transcurso de los siglos, hallan considerado al Sol como una divinidad a la que se le ha reservado un lugar especial. <br> Así, para los griegos Helios fue el hijo de los titanes Hiperión y Gea, personificación del Sol, y Ra fue el dios del cielo, dios del Sol y del origen de la vida para los egipcios. Utu, por su parte, era para los sumerios el dios del Sol a la par que de la justicia, al cual los Incas conocían como Inti, su deidad más importante y padre del emperador. Su nombre actual, Sol, procede del término latino 'solis', el cual alude a la deidad romana solis invictus o sol invicto, cuyo culto religioso se remonta al Imperio Romano tardío.",
+				caracteristicas: [
+					"Compuesto principalmente de hidrógeno y helio",
+					"Produce energía mediante fusión nuclear",
+					"Su gravedad mantiene a los planetas en órbita"
+				],
+				datos_fisicos: {
+					diametro: "1,392,700 km",
+					masa: "1.989 x 10<sup>30</sup> kg",
+					temperatura_superficial: "5,500 °C"
+				},
+				curiosidades: [
+					"Representa el 99.8% de la masa del sistema solar",
+					"Tarda unos 8 minutos en llegar la luz del Sol a la Tierra"
+				]
+			},
+			{
+				nombre: "Mercurio",
+				descripcion: "Mercurio fue nombrado de esta manera en honor a Hermes, el mensajero de los dioses griegos del Olimpo. Más tarde los romanos lo bautizaron, tal y como ocurre con el resto de los planetas, con el equivalente en su mitología para los dioses griegos, en este caso Mercurio. Y con ese nombre ha llegado hasta nuestros días. <br> Con un tamaño tan solo un poco mayor al de nuestra luna, es el planeta más pequeño del sistema solar y el más cercano al Sol. Se trata del menor de los planetas rocosos del sistema solar y de manera similar a la Luna, presenta una superficie plagada de cráteres, en parte, debido a la finísima y casi ausente atmósfera (exosfera) que le rodea. Con una velocidad de 170.5030 kilómetros por hora, también se trata del planeta que viaja más rápido a través del espacio -de aquí su nombre- ya que la velocidad de un planeta incrementa con su cercanía a la estrella que orbita.",
+				caracteristicas: [
+					"No tiene atmósfera significativa",
+					"Su superficie está cubierta de cráteres",
+					"Experimenta grandes cambios de temperatura"
+				],
+				datos_fisicos: {
+					diametro: "4,879 km",
+					masa: "3.30 x 10<sup>23</sup> kg",
+					temperatura: "-173 a 427 °C"
+				},
+				curiosidades: [
+					"Un día en Mercurio dura 59 días terrestres",
+					"No tiene lunas"
+				]
+			},
+			{
+				nombre: "Venus",
+				descripcion: "Solo tras el Sol y la Luna, Venus es el objeto más brillante que se puede ver en el firmamento desde la Tierra. Esto propició, ya desde la antigüedad, que por su brillo y belleza los romanos asociaran el planeta con la diosa de la belleza y el amor, Venus, de la cual recibe su nombre. <br> Parte de la intensidad del brillo de Venus es debido a la cercanía con la Tierra, ya que se trata del planeta que más próximo se encuentra de nosotros. También es el segundo planeta más cercano al Sol. Se trata de otro de los 4 planetas rocosos del sistema solar y debido a la gran similitud tanto en tamaño como en densidad con nuestro planeta, en ocasiones es denominado como el planeta gemelo de la Tierra.",
+				caracteristicas: [
+					"Tiene una atmósfera de dióxido de carbono con nubes de ácido sulfúrico",
+					"La presión atmosférica es 92 veces mayor que la de la Tierra",
+					"Su rotación es retrógrada"
+				],
+				datos_fisicos: {
+					diametro: "12,104 km",
+					masa: "4.87 x 10<sup>24</sup> kg",
+					temperatura: "471 °C promedio"
+				},
+				curiosidades: [
+					"Es el planeta más caliente del sistema solar",
+					"Un día venusiano dura más que su año"
+				]
+			},
+			{
+				nombre: "Tierra",
+				descripcion: "Por simple que pueda parecer, el nombre de nuestro planeta, no obstante, también tiene un origen en la mitología griega. Así, en este caso, los antiguos griegos denominaron a la Tierra en honor a la diosa Gea, la cual era adorada como la creadora del universo y la madre, tanto de los dioses primordiales, los titanes, como de los primeros humanos. Al igual que sucede con el resto de planetas, posteriormente los romanos la bautizaron con el nombre de su diosa equivalente, Terra, el cual ha transcendido hasta el presente con las evidentes adaptaciones. <br> Nuestro hogar, la Tierra, es el quinto planeta más grande y el tercero en cercanía al Sol del sistema solar. Entre otras cualidades como la rotación de su eje respecto a la elíptica, la composición de su atmósfera rica en oxígeno o la presencia de agua líquida, esta distancia de la Tierra al Sol -situada dentro de la zona de habitabilidad de una estrella- es la responsable de que nuestro planeta sea el único del sistema solar en el que hasta el momento se haya encontrado vida.",
+				caracteristicas: [
+					"Tiene agua en estado líquido en abundancia",
+					"Posee una atmósfera rica en oxígeno",
+					"Cuenta con un campo magnético que la protege de la radiación solar"
+				],
+				datos_fisicos: {
+					diametro: "12,742 km",
+					masa: "5.97 x 10<sup>24</sup> kg",
+					temperatura: "-88 a 58 °C"
+				},
+				curiosidades: [
+					"Tiene una sola luna",
+					"El 71% de su superficie está cubierta por agua"
+				]
+			},
+			{
+				nombre: "Marte",
+				descripcion: "El planeta Marte recibe su nombre en honor a Ares, el dios griego de la guerra. Más tarde los romanos lo bautizaron, tal y como ocurre con el resto de los planetas, con el equivalente en su mitología para los dioses griegos, en este caso Marte. <br> Marte, también conocido como el planeta Rojo, es el más alejado del Sol de los cuatro planetas rocosos del sistema solar, y el segundo más cercano a la Tierra, aunque cuenta aproximadamente con solo la mitad de su tamaño. Se trata de un planeta sencillo de identificar en el firmamento nocturno debido al brillo rojizo que hace honor a su nombre.",
+				caracteristicas: [
+					"Tiene estaciones como la Tierra",
+					"Posee los volcanes y cañones más grandes del sistema solar",
+					"Cuenta con dos lunas: Fobos y Deimos"
+				],
+				datos_fisicos: {
+					diametro: "6,779 km",
+					masa: "6.42 x 10<sup>23</sup> kg",
+					temperatura: "-125 a 20 °C"
+				},
+				curiosidades: [
+					"El Monte Olimpo es el volcán más alto del sistema solar",
+					"Se han encontrado indicios de agua congelada"
+				]
+			},
+			{
+				nombre: "Júpiter",
+				descripcion: "Como no podía ser de otra manera, Júpiter, con más del doble de la masa que el resto de planetas juntos, es el planeta más grande del sistema solar por lo que recibe su nombre del dios entre los dioses del Olimpo, Zeus; Júpiter en la mitología romana. <br> Y es que todo en Júpiter adquiere magnitudes extraordinarias. Para hacernos una idea, en torno a la línea del ecuador de Júpiter cabrían hasta 11 planetas Tierra puestos en fila.",
+				caracteristicas: [
+					"Tiene una gran mancha roja, una tormenta gigante",
+					"Compuesto principalmente de hidrógeno y helio",
+					"Emite más calor del que recibe del Sol"
+				],
+				datos_fisicos: {
+					diametro: "139,820 km",
+					masa: "1.90 x 10<sup>27</sup> kg",
+					temperatura: "-108 °C"
+				},
+				curiosidades: [
+					"Tiene al menos 79 lunas",
+					"Ganimedes, su luna, es más grande que Mercurio"
+				]
+			},
+			{
+				nombre: "Saturno",
+				descripcion: "Saturno es otro de los planetas más grandes del sistema solar, por lo que al igual que Júpiter, recibe su nombre de uno de los dioses más importantes de la mitología para griegos y romanos, quienes respectivamente se referían a él como Cronos y Saturno, y en sendas mitologías fueron padres de Zeus y Júpiter. Cronos y Saturno eran, de hecho, los dioses del tiempo y la agricultura. Saturno es el planeta que a lo largo del año se puede observar durante más tiempo en el firmamento, por lo que la elección de ambas culturas para nombrar a este gigante gaseoso no es una casualidad.",
+				caracteristicas: [
+					"Anillos formados por hielo y roca",
+					"Gigante gaseoso con núcleo sólido",
+					"Posee un campo magnético fuerte"
+				],
+				datos_fisicos: {
+					diametro: "116,460 km",
+					masa: "5.68 x 10<sup>26</sup> kg",
+					temperatura: "-139 °C"
+				},
+				curiosidades: [
+					"Tiene más de 80 lunas",
+					"Titán, su luna, tiene atmósfera densa y ríos de metano líquido"
+				]
+			},
+			{
+				nombre: "Urano",
+				descripcion: "El dios Urano fue en la mitología griega el dios del cielo. Sin embargo, cuando los griegos se referían al objeto que brillaba en el cielo con este nombre, no se estaban refiriendo a un planeta, si no que creían que se trataba de una estrella. Para constatar que Urano se trataba de un planeta hubo que esperar hasta el año 1781, cuando fue descubierto por Sir William Herschel, quien quiso bautizarlo en honor al rey Jorge III de Inglaterra. Georgium Sidus, el nombre propuesto por Herschel para este gigante de hielo no prosperó, y la comunidad astronómica acordó en el año 1850 que este adoptara el nombre de Urano, un nombre de origen mitológico en consonancia al resto del planetas del sistema solar.",
+				caracteristicas: [
+					"Gira casi de lado (inclinación de 98°)",
+					"Composición rica en agua, amoníaco y metano",
+					"Color azul verdoso por el metano en su atmósfera"
+				],
+				datos_fisicos: {
+					diametro: "50,724 km",
+					masa: "8.68 x 10<sup>25</sup> kg",
+					temperatura: "-195 °C"
+				},
+				curiosidades: [
+					"Tiene al menos 27 lunas",
+					"Se cree que puede tener un océano interno de agua"
+				]
+			},
+			{
+				nombre: "Neptuno",
+				descripcion: "El nombre del planeta Neptuno, dios de los océanos para los romanos, en un proceso parecido al que tuvo lugar con Urano, fue adoptado por consenso dentro de la comunidad de astrónomos. Neptuno fue el primer planeta descubierto mediante cálculos matemáticos, ya que los antiguos, al igual que ocurrió con Urano, pensaban que se trataba de una estrella. <br> Oscuro, frío y regido por vientos supersónicos, el gigante de hielo Neptuno es el octavo y más distante planeta de nuestro sistema solar. Está tan lejos que es el único de los planetas que no es visible desde la Tierra a simple vista.",
+				caracteristicas: [
+					"Tiene vientos extremadamente rápidos",
+					"Posee una atmósfera compuesta de hidrógeno, helio y metano",
+					"Color azul intenso por el metano"
+				],
+				datos_fisicos: {
+					diametro: "49,244 km",
+					masa: "1.02 x 10<sup>26</sup> kg",
+					temperatura: "-200 °C"
+				},
+				curiosidades: [
+					"Tiene una Gran Mancha Oscura similar a la de Júpiter",
+					"Tritón, su luna, tiene géiseres de nitrógeno"
+				]
+			}
+		];
+
+
+		setTimeout(() => {
+			document.getElementsByClassName('title')[0].innerHTML = 'Controles del sistema';
+		}, 500);
+
+
+		// Declare the sun and planets globally
+		let sun;
+		let mercury, venus, earth, mars, jupiter, saturn, uranus, neptune;
+
+		let keyState = {}; // Track keyboard input
+		let shipMoving = true; // Ship movement state
+		let previousCameraView = options.cameraView; // Track camera view changes
+
+		init();
+		animationLoop();
+
+		function init() {
+			// Scene and Renderer
+			scene = new THREE.Scene();
+			renderer = new THREE.WebGLRenderer({ antialias: true });
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.shadowMap.enabled = true;
+			document.body.appendChild(renderer.domElement);
+
+			// Cameras
+			camera = new THREE.PerspectiveCamera(
+				40,
+				window.innerWidth / window.innerHeight,
+				0.1,
+				1000
+			);
+			camera.position.set(0, 50, 100);
+
+			spaceshipCamera = new THREE.PerspectiveCamera(
+				60, // Field of view
+				window.innerWidth / window.innerHeight, // Aspect ratio
+				10, // Near clipping plane
+				1000 // Far clipping plane
+			);
+
+			currentCamera = camera;
+
+			// Controls
+			camcontrols1 = new OrbitControls(camera, renderer.domElement);
+			camcontrols1.enableDamping = true;
+
+			// Ambient Light
+			const ambientLight = new THREE.AmbientLight(0x444444);
+			scene.add(ambientLight);
+
+			// Sun (Light Source)
+			const sunTexture = new THREE.TextureLoader().load(
+				'images/2k_sun.jpg'
+			);
+			const sunGeometry = new THREE.SphereGeometry(10, 32, 32);
+			const sunMaterial = new THREE.MeshBasicMaterial({ map: sunTexture });
+			sun = new THREE.Mesh(sunGeometry, sunMaterial);
+			sun.position.set(0, 0, 0);
+			sun.name = 'Sol';
+			scene.add(sun);
+
+			const sunLight = new THREE.PointLight(0xffffff, 2, 0);
+			sunLight.position.set(0, 0, 0);
+			sunLight.castShadow = true;
+			scene.add(sunLight);	
+
+			// Milky Way background
+			const milkyWayTexture = new THREE.TextureLoader().load(
+				'images/8k_stars_milky_way.jpg'
+			);
+			const milkyWayGeometry = new THREE.SphereGeometry(500, 64, 64);
+			const milkyWayMaterial = new THREE.MeshBasicMaterial({
+				map: milkyWayTexture,
+				side: THREE.BackSide, // Render on the back side of the mesh
+			});
+			const milkyWay = new THREE.Mesh(milkyWayGeometry, milkyWayMaterial);
+			scene.add(milkyWay);
+
+			// Planets
+			createPlanets();
+
+			// Spaceship
+			createSpaceship();
+
+			// Keyboard Event Listeners
+			document.addEventListener('keydown', (event) => {
+				keyState[event.code] = true;
+			});
+
+			document.addEventListener('keyup', (event) => {
+				keyState[event.code] = false;
+			});
+
+			// GUI
+			gui = new GUI();
+			gui
+				.add(options, 'cameraView', ['sistema', 'nave'])
+				.name('Cámara')
+				.onChange(() => {
+					// Update controls display
+					if (options.cameraView === 'nave') {
+						currentCamera = spaceshipCamera;
+						camcontrols1.enabled = false;
+						document.getElementById('spaceship-controls').style.display = 'block';
+						document.getElementById('system-controls').style.display = 'none';
+					} else {
+						currentCamera = camera;
+						camcontrols1.enabled = true;
+						document.getElementById('spaceship-controls').style.display = 'none';
+						document.getElementById('system-controls').style.display = 'block';
+					}
+				});
+
+			gui.add(options, 'planetSpeed', 0, 10, 0.1).name('Velocidad de los planetas');
+
+
+			// Window Resize Handler
+			window.addEventListener('resize', onWindowResize);
+
+			// Mouse Event Listeners
+			window.addEventListener('click', onMouseClick, false);
+		}
+
+		function onMouseClick(event) {
+			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+			mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+			raycaster.setFromCamera(mouse, currentCamera);
+
+			const clickableObjects = [sun, ...planets];
+			const intersects = raycaster.intersectObjects(clickableObjects);
+
+			if (intersects.length > 0) {
+				const clicked = intersects[0].object;
+				const name = clicked.name || 'Objeto desconocido';
+				const description = mapearInfoPlaneta(name);
+
+				// Actualizar contenido del modal
+				document.getElementById('planetModalLabel').textContent = name === 'Sol' ? 'Información general del Sol' : 'Información general del planeta ' + name;
+				document.getElementById('planetModalDescription').innerHTML = description.descripcion;
+				document.getElementById('planetModalCharacteristics').innerHTML = description.caracteristicas;
+				document.getElementById('planetModalPhysicalData').innerHTML = description.datos_fisicos;
+				document.getElementById('planetModalCuriosities').innerHTML = description.curiosidades;
+
+				// Mostrar el modal usando Bootstrap
+				$('#planetModal').modal('show');
+			}
+		}
+
+		function mapearInfoPlaneta(name) {
+
+			const original = planetInfo.find(planet => planet.nombre === name);
+			var info = JSON.parse(JSON.stringify(original));
+
+			info.descripcion = `<p>${info.descripcion}</p>`;
+
+			info.datos_fisicos = Object.entries(info.datos_fisicos)
+				.map(([clave, valor]) => `<li><strong>${clave}:</strong> ${valor}</li>`)
+				.join('');
+
+			info.caracteristicas = Object.entries(info.caracteristicas)
+				.map(([clave, valor]) => `<li>${valor}</li>`)
+				.join('');
+
+			info.curiosidades = Object.entries(info.curiosidades)
+				.map(([clave, valor]) => `<li>${valor}</li>`)
+				.join('');
+
+			return info;
+		}
+
+
+		function createPlanets() {
+			// Mercury
+			const mercuryTexture = new THREE.TextureLoader().load(
+				'images/2k_mercury.jpg'
+			);
+			const mercuryGeometry = new THREE.SphereGeometry(1, 32, 32);
+			const mercuryMaterial = new THREE.MeshPhongMaterial({ map: mercuryTexture });
+			mercury = new THREE.Mesh(mercuryGeometry, mercuryMaterial);
+			mercury.castShadow = true;
+			mercury.receiveShadow = true;
+			const mercuryOrbitRadius = 15;
+			const mercuryAngle = Math.random() * Math.PI * 2;
+			mercury.position.set(
+				mercuryOrbitRadius * Math.cos(mercuryAngle),
+				0,
+				mercuryOrbitRadius * Math.sin(mercuryAngle)
+			);
+			mercury.userData = {
+				orbitRadius: mercuryOrbitRadius,
+				orbitSpeed: 0.02,
+				angle: mercuryAngle,
+			};
+			mercury.name = 'Mercurio';
+			planets.push(mercury);
+			scene.add(mercury);
+			drawOrbit(mercuryOrbitRadius);
+
+			// Venus
+			const venusTexture = new THREE.TextureLoader().load(
+				'images/2k_venus_surface.jpg'
+			);
+			const venusGeometry = new THREE.SphereGeometry(1.5, 32, 32);
+			const venusMaterial = new THREE.MeshPhongMaterial({ map: venusTexture });
+			venus = new THREE.Mesh(venusGeometry, venusMaterial);
+			venus.castShadow = true;
+			venus.receiveShadow = true;
+			const venusOrbitRadius = 20;
+			const venusAngle = Math.random() * Math.PI * 2;
+			venus.position.set(
+				venusOrbitRadius * Math.cos(venusAngle),
+				0,
+				venusOrbitRadius * Math.sin(venusAngle)
+			);
+			venus.userData = {
+				orbitRadius: venusOrbitRadius,
+				orbitSpeed: 0.015,
+				angle: venusAngle,
+			};
+			venus.name = 'Venus';
+			planets.push(venus);
+			scene.add(venus);
+			drawOrbit(venusOrbitRadius);
+
+			// Earth with moon, clouds, and specular map
+			const earthTexture = new THREE.TextureLoader().load(
+				'images/2k_earth_daymap.jpg'
+			);
+			// const earthSpecular = new THREE.TextureLoader().load(
+			// 	url_base + 'images/2k_earth_specular_map.tif'
+			// );
+			const earthClouds = new THREE.TextureLoader().load(
+				'images/2k_earth_clouds.jpg'
+			);
+			const earthGeometry = new THREE.SphereGeometry(2, 32, 32);
+			const earthMaterial = new THREE.MeshPhongMaterial({
+				map: earthTexture,
+				// specularMap: earthSpecular,
+				specular: new THREE.Color('grey'),
+			});
+			earth = new THREE.Mesh(earthGeometry, earthMaterial);
+			earth.castShadow = true;
+			earth.receiveShadow = true;
+			const earthOrbitRadius = 25;
+			const earthAngle = Math.random() * Math.PI * 2;
+			earth.position.set(
+				earthOrbitRadius * Math.cos(earthAngle),
+				0,
+				earthOrbitRadius * Math.sin(earthAngle)
+			);
+			earth.userData = {
+				orbitRadius: earthOrbitRadius,
+				orbitSpeed: 0.01,
+				angle: earthAngle,
+			};
+			earth.position.set(earthOrbitRadius, 0, 0);
+			earth.name = 'Tierra';
+			planets.push(earth);
+			scene.add(earth);
+			drawOrbit(earthOrbitRadius);
+
+
+			// Moon
+			const moonTexture = new THREE.TextureLoader().load(
+					'images/2k_moon.jpg'
+			);
+			const moonGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+			const moonMaterial = new THREE.MeshPhongMaterial({ map: moonTexture });
+			const moon = new THREE.Mesh(moonGeometry, moonMaterial);
+			moon.position.set(4, 0, 0); // Positioning relative to Earth
+			moon.name = 'Tierra';
+			earth.add(moon);
+
+			// Mars
+			const marsTexture = new THREE.TextureLoader().load(
+				'images/2k_mars.jpg'
+			);
+			const marsGeometry = new THREE.SphereGeometry(1.2, 32, 32);
+			const marsMaterial = new THREE.MeshPhongMaterial({ map: marsTexture });
+			mars = new THREE.Mesh(marsGeometry, marsMaterial);
+			mars.castShadow = true;
+			mars.receiveShadow = true;
+			const marsOrbitRadius = 30;
+			const marsAngle = Math.random() * Math.PI * 2;
+			mars.position.set(
+				marsOrbitRadius * Math.cos(marsAngle),
+				0,
+				marsOrbitRadius * Math.sin(marsAngle)
+			);
+			mars.userData = {
+				orbitRadius: marsOrbitRadius,
+				orbitSpeed: 0.008,
+				angle: marsAngle,
+			};
+			mars.name = 'Marte';
+			planets.push(mars);
+			scene.add(mars);
+			drawOrbit(marsOrbitRadius);
+
+			// Jupiter
+			const jupiterTexture = new THREE.TextureLoader().load(
+				'images/2k_jupiter.jpg'
+			);
+			const jupiterGeometry = new THREE.SphereGeometry(4, 32, 32);
+			const jupiterMaterial = new THREE.MeshPhongMaterial({ map: jupiterTexture });
+			jupiter = new THREE.Mesh(jupiterGeometry, jupiterMaterial);
+			jupiter.castShadow = true;
+			jupiter.receiveShadow = true;
+			const jupiterOrbitRadius = 40;
+			const jupiterAngle = Math.random() * Math.PI * 2;
+			jupiter.position.set(
+				jupiterOrbitRadius * Math.cos(jupiterAngle),
+				0,
+				jupiterOrbitRadius * Math.sin(jupiterAngle)
+			);
+			jupiter.userData = {
+				orbitRadius: jupiterOrbitRadius,
+				orbitSpeed: 0.005,
+				angle: jupiterAngle,
+			};
+			jupiter.name = 'Júpiter';
+			planets.push(jupiter);
+			scene.add(jupiter);
+			drawOrbit(jupiterOrbitRadius);
+
+			// Saturn with rings
+			const saturnTexture = new THREE.TextureLoader().load(
+				'images/2k_saturn.jpg'
+			);
+			const saturnGeometry = new THREE.SphereGeometry(3.5, 32, 32);
+			const saturnMaterial = new THREE.MeshPhongMaterial({ map: saturnTexture });
+			saturn = new THREE.Mesh(saturnGeometry, saturnMaterial);
+			saturn.castShadow = true;
+			saturn.receiveShadow = true;
+			const saturnOrbitRadius = 50;
+			const saturnAngle = Math.random() * Math.PI * 2;
+			saturn.position.set(
+				saturnOrbitRadius * Math.cos(saturnAngle),
+				0,
+				saturnOrbitRadius * Math.sin(saturnAngle)
+			);
+			saturn.userData = {
+				orbitRadius: saturnOrbitRadius,
+				orbitSpeed: 0.004,
+				angle: saturnAngle,
+			};
+			saturn.name = 'Saturno';
+			planets.push(saturn);
+			scene.add(saturn);
+			drawOrbit(saturnOrbitRadius);
+
+			// Saturn rings
+			const ringGeometry = new THREE.RingGeometry(
+				4.5, // radio interno
+				8, // radio externo
+				128, // segmentos
+				1, // número de anillos
+				0, // ángulo inicial
+				Math.PI * 2 // ángulo final
+			);
+			const ringMaterial = new THREE.MeshBasicMaterial({
+				map: new THREE.TextureLoader().load(
+					'images/2k_saturn_ring_alpha.png'
+				),
+				side: THREE.DoubleSide,
+				transparent: true,
+				opacity: 0.8,
+				alphaTest: 0.1,
+			});
+			const rings = new THREE.Mesh(ringGeometry, ringMaterial);
+			rings.rotation.x = Math.PI / 2;
+			saturn.add(rings);
+
+			// Uranus
+			const uranusTexture = new THREE.TextureLoader().load(
+				'images/2k_uranus.jpg'
+			);
+			const uranusGeometry = new THREE.SphereGeometry(2.5, 32, 32);
+			const uranusMaterial = new THREE.MeshPhongMaterial({ map: uranusTexture });
+			uranus = new THREE.Mesh(uranusGeometry, uranusMaterial);
+			uranus.castShadow = true;
+			uranus.receiveShadow = true;
+			const uranusOrbitRadius = 60;
+			const uranusAngle = Math.random() * Math.PI * 2;
+			uranus.position.set(
+				uranusOrbitRadius * Math.cos(uranusAngle),
+				0,
+				uranusOrbitRadius * Math.sin(uranusAngle)
+			);
+			uranus.userData = {
+				orbitRadius: uranusOrbitRadius,
+				orbitSpeed: 0.003,
+				angle: uranusAngle,
+			};
+			uranus.name = 'Urano';
+			planets.push(uranus);
+			scene.add(uranus);
+			drawOrbit(uranusOrbitRadius);
+
+			// Neptune
+			const neptuneTexture = new THREE.TextureLoader().load(
+				'images/2k_neptune.jpg'
+			);
+			const neptuneGeometry = new THREE.SphereGeometry(2.5, 32, 32);
+			const neptuneMaterial = new THREE.MeshPhongMaterial({ map: neptuneTexture });
+			neptune = new THREE.Mesh(neptuneGeometry, neptuneMaterial);
+			neptune.castShadow = true;
+			neptune.receiveShadow = true;
+			const neptuneOrbitRadius = 70;
+			const neptuneAngle = Math.random() * Math.PI * 2;
+			neptune.position.set(
+				neptuneOrbitRadius * Math.cos(neptuneAngle),
+				0,
+				neptuneOrbitRadius * Math.sin(neptuneAngle)
+			);
+			neptune.userData = {
+				orbitRadius: neptuneOrbitRadius,
+				orbitSpeed: 0.003,
+				angle: neptuneAngle,
+			};
+			neptune.name = 'Neptuno';
+			planets.push(neptune);
+			scene.add(neptune);
+			drawOrbit(neptuneOrbitRadius);
+		}
+		function createSpaceship() {
+			// Create a WebGLCubeRenderTarget instead of CubeCamera directly
+			const cubeRenderTarget = new THREE.WebGLCubeRenderTarget(256, {
+				format: THREE.RGBFormat,
+				generateMipmaps: true,
+				minFilter: THREE.LinearMipmapLinearFilter,
+			});
+
+			// Create CubeCamera with the render target
+			cubeCamera = new THREE.CubeCamera(0.1, 1000, cubeRenderTarget);
+			scene.add(cubeCamera);
+
+			// Create spaceship with reflective material
+			const geometry = new THREE.SphereGeometry(0.1, 32, 32);
+			const material = new THREE.MeshPhongMaterial({
+				envMap: cubeRenderTarget.texture,
+				reflectivity: 1.0,
+			});
+			ship = new THREE.Mesh(geometry, material);
+			ship.position.set(0, 0, 70);
+			ship.rotation.y = Math.PI; // Face the ship towards the scene
+
+			// Add camera to ship
+			ship.add(spaceshipCamera);
+			spaceshipCamera.position.set(10, 20, -10);
+			spaceshipCamera.lookAt(sun.position);
+			scene.add(ship);
+		}
+
+		function onWindowResize() {
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+
+			spaceshipCamera.aspect = window.innerWidth / window.innerHeight;
+			spaceshipCamera.updateProjectionMatrix();
+
+			renderer.setSize(window.innerWidth, window.innerHeight);
+		}
+
+		function animatePlanets() {
+			planets.forEach((planet) => {
+				planet.userData.angle += planet.userData.orbitSpeed * options.planetSpeed;
+				planet.position.set(
+					planet.userData.orbitRadius * Math.cos(planet.userData.angle),
+					0,
+					planet.userData.orbitRadius * Math.sin(planet.userData.angle)
+				);
+				planet.rotation.y += 0.01;
+			});
+		}
+
+		function drawOrbit(radius) {
+			const points = [];
+			const segments = 64;
+
+			for (let i = 0; i <= segments; i++) {
+				const theta = (i / segments) * Math.PI * 2;
+				points.push(
+					new THREE.Vector3(radius * Math.cos(theta), 0, radius * Math.sin(theta))
+				);
+			}
+
+			const orbitGeometry = new THREE.BufferGeometry().setFromPoints(points);
+			const orbitMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
+			const orbit = new THREE.LineLoop(orbitGeometry, orbitMaterial);
+			scene.add(orbit);
+		}
+
+		function animationLoop() {
+			requestAnimationFrame(animationLoop);
+
+			animatePlanets();
+
+			// Rotate the sun for visual effect
+			sun.rotation.y += 0.005;
+
+			// Check for camera view change to reset the ship
+			if (previousCameraView !== options.cameraView) {
+				if (options.cameraView === 'sistema') {
+					// Reset the ship to initial state
+					ship.position.set(0, 0, 70);
+					ship.rotation.set(0, Math.PI, 0);
+					shipMoving = true; // Ensure the ship moves automatically
+				}
+				previousCameraView = options.cameraView;
+			}
+
+			// Spaceship Controls
+			if (options.cameraView === 'nave') {
+				if (shipMoving) {
+					const moveSpeed = 0.5;
+					const rotationSpeed = 0.05;
+
+					if (keyState['ArrowUp']) {
+						ship.rotation.x += rotationSpeed;
+					}
+					if (keyState['ArrowDown']) {
+						ship.rotation.x -= rotationSpeed;
+					}
+					if (keyState['ArrowLeft']) {
+						ship.rotation.y += rotationSpeed;
+					}
+					if (keyState['ArrowRight']) {
+						ship.rotation.y -= rotationSpeed;
+					}
+					if (keyState['KeyQ']) {
+						ship.translateY(moveSpeed);
+					}
+					if (keyState['KeyE']) {
+						ship.translateY(-moveSpeed);
+					}
+					if (keyState['KeyW']) {
+						ship.translateZ(moveSpeed);
+					}
+					if (keyState['KeyS']) {
+						ship.translateZ(-moveSpeed);
+					}
+					if (keyState['KeyA']) {
+						ship.translateX(moveSpeed);
+					}
+					if (keyState['KeyD']) {
+						ship.translateX(-moveSpeed);
+					}
+				}
+			}
+
+			// Update cube camera for reflections
+			if (ship.visible) {
+				ship.visible = false;
+				cubeCamera.position.copy(ship.position);
+				cubeCamera.update(renderer, scene);
+				ship.visible = true;
+			}
+
+			// Update currentCamera based on options
+			if (options.cameraView === 'sistema') {
+				currentCamera = camera;
+			} else {
+				currentCamera = spaceshipCamera;
+			}
+
+			// Update controls
+			if (currentCamera === camera) {
+				camcontrols1.update();
+			}
+
+			// Render the scene with the current camera
+			renderer.render(scene, currentCamera);
+		}
+
+	</script>
+</body>
+
+</html>

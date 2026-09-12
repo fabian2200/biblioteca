@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Modelo 3D del sistema digestivo</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link type="text/css" rel="stylesheet" href="main.css">
+    <link href="../bootstrap/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap JS (requerido para modales) -->
+    <script src="../bootstrap/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="../bootstrap/style.css" />
+    <link rel="stylesheet" href="../fontawesome/css/all.min.css">
+    <script src="../jquery-3.7.1.min.js"></script>
+    <link rel="stylesheet" href="./css/index.css">
+</head>
+
+<body>
+
+    <div id="labels-container"></div>
+
+    <!-- Controls display for spaceship view -->
+    <div id="spaceship-controls" class="controls-display">
+        <div class="controls-title">Controles de la Nave:</div>
+        <div class="controls-container">
+            <div class="control-item">
+                <span class="key-symbol">W</span> Adelante
+            </div>
+            <div class="control-item"><span class="key-symbol">S</span> Atrás</div>
+            <div class="control-item">
+                <span class="key-symbol">A</span> Izquierda
+            </div>
+            <div class="control-item">
+                <span class="key-symbol">D</span> Derecha
+            </div>
+            <div class="control-item"><span class="key-symbol">Q</span> Arriba</div>
+            <div class="control-item"><span class="key-symbol">E</span> Abajo</div>
+            <div class="control-item">
+                <span class="key-symbol">⬆️⬇️⬅️➡️</span> Rotar
+            </div>
+        </div>
+    </div>
+
+    <!-- Controls display for system view -->
+	<div id="system-controls" class="controls-display">
+		<div class="controls-title">Controles del Sistema:</div>
+		<div class="control-item">
+			<span class="key-symbol">🖱️</span> Click izquierdo + Arrastrar para rotar cámara
+		</div>
+		<div class="control-item">
+			<span class="key-symbol">🖱️</span> Click derecho + arrastrar para mover el Modelo
+		</div>
+	</div>
+
+    <!-- Modal de información del planeta -->
+    <div id="miModal" class="modal-flotante">
+        <div class="d-flex justify-content-end align-items-center gap-3" id="botones-modal">
+			<span id="boton-hablar" ><i class="fa-solid fa-volume-high"></i></span>
+			<span class="cerrar-modal" id="cerrar-modal"><i style="color: red; font-size: 40px;" class="fa-solid fa-xmark"></i></span>
+		</div>
+        <!-- Botones de las Pestañas -->
+        <h3 id="modal-nombre-texto">Cargando...</h3>
+        <div class="pestanas-container">
+            <button class="btn-pestana activa" onclick="cambiarPestana(event, 'tab-descripcion')">Descripción</button>
+            <button class="btn-pestana" onclick="cambiarPestana(event, 'tab-funciones')">Funciones</button>
+        </div>
+    
+        <div id="tab-descripcion" class="contenido-pestana activa">
+            <p id="modal-descripcion-texto">Cargando...</p>
+        </div>
+        <div id="tab-funciones" class="contenido-pestana">
+            <p id="modal-funciones-texto">Cargando...</p>
+        </div>
+    </div>
+
+    <div id="container"></div>
+
+    <div id="loading-container">
+		<div class="loading-container-content">
+			<div id="loading-text">Cargando modelo</div>
+			<div class="contenedor" style="position: relative;">
+				<span id="barra-text">0%</span>
+				<div id="barra" class="barra">
+				</div>
+			</div>
+		</div>
+	</div>
+
+    <div class="info" style="font-size: 18px; padding: 8px;">Modelo 3D del sistema digestivo</div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "../build/three.module.js",
+                "three/addons/": "./jsm/"
+            }
+        }
+    </script>
+
+    <script src="./js/index.js"></script>
+
+    <script type="module">
+
+        var partesSistemaDigestivo = [
+            {
+                id : "dientes",
+                nombre : "Dientes",
+                funcion : "<p>Triturar y desgarrar los alimentos.</p>",
+                descripcion : "<p>Los dientes son estructuras duras localizadas en la boca que cumplen la función principal de cortar, desgarrar y triturar los alimentos para facilitar la deglución y la digestión química posterior. Están recubiertos de esmalte, la sustancia más dura del cuerpo humano, y desempeñan un papel esencial en la primera etapa de la digestión.</p>"
+            },
+            {
+                id : "boca",
+                nombre : "Boca",
+                funcion : "<p>Iniciar la digestión mecánica y química de los alimentos.</p>",
+                descripcion : "<p>La boca es la puerta de entrada del sistema digestivo. En ella se produce la masticación con ayuda de los dientes y la mezcla de los alimentos con la saliva secretada por las glándulas salivales. Aquí comienza la digestión química gracias a enzimas como la amilasa salival.</p>"
+            },
+            {
+                id : "glandulas_salivales",
+                nombre : "Glándulas Salivales",
+                funcion : "<p>Producir y secretar saliva.</p>",
+                descripcion : "<p>Las glándulas salivales son órganos exocrinos que producen saliva, un líquido que humedece los alimentos y contiene enzimas digestivas, como la amilasa, que inician la descomposición de carbohidratos. También cumplen una función lubricante y protectora en la cavidad bucal.</p>"
+            },
+            {
+                id : "faringe",
+                nombre : "Faringe",
+                funcion : "<p>Conducir el bolo alimenticio hacia el esófago.</p>",
+                descripcion : "<p>La faringe es un conducto muscular compartido por el sistema digestivo y respiratorio. Su función principal en la digestión es permitir el paso del bolo alimenticio desde la boca hacia el esófago durante la deglución, coordinando la acción para evitar el paso de alimentos hacia la vía respiratoria.</p>"
+            },
+            {
+                id : "esofago",
+                nombre : "Esófago",
+                funcion : "<p>Transportar el bolo alimenticio al estómago.</p>",
+                descripcion : "<p>El esófago es un tubo muscular que conecta la faringe con el estómago. A través de contracciones rítmicas conocidas como movimientos peristálticos, impulsa el bolo alimenticio hacia el estómago. También cuenta con esfínteres que regulan la entrada y evitan el reflujo gástrico.</p>"
+            },
+            {
+                id : "higado_2",
+                nombre : "Hígado",
+                funcion : "<p>Producir bilis y procesar nutrientes.</p>",
+                descripcion : "<p>El hígado es una glándula voluminosa con múltiples funciones en la digestión y metabolismo. Produce la bilis, sustancia esencial para la emulsión de las grasas. Además, procesa nutrientes absorbidos en el intestino, almacena glucógeno, detoxifica sustancias y participa en la síntesis de proteínas plasmáticas.</p>"
+            },
+            {
+                id : "estomago",
+                nombre : "Estómago",
+                funcion : "<p>Descomponer los alimentos con jugos gástricos.</p>",
+                descripcion : "<p>El estómago es un órgano muscular que recibe los alimentos desde el esófago y los mezcla con jugos gástricos compuestos por ácido clorhídrico y enzimas digestivas como la pepsina. En este órgano se inicia la digestión de las proteínas y se forma el quimo, una papilla semilíquida que pasa al intestino delgado.</p>"
+            },
+            {
+                id : "vesicula_biliar",
+                nombre : "Vesícula Biliar",
+                funcion : "<p>Almacenar y liberar bilis.</p>",
+                descripcion : "<p>La vesícula biliar es un pequeño órgano en forma de saco situado debajo del hígado. Su función es almacenar la bilis producida por el hígado y liberarla en el intestino delgado, específicamente en el duodeno, para facilitar la digestión y absorción de grasas.</p>"
+            },
+            {
+                id : "Intestino_grueso",
+                nombre : "Intestino Grueso",
+                funcion : "<p>Absorber agua y formar las heces.</p>",
+                descripcion : "<p>El intestino grueso es la última parte del tubo digestivo. Su función principal es absorber agua y sales minerales de los restos no digeridos, compactándolos hasta formar las heces. También alberga una flora bacteriana beneficiosa que participa en la producción de algunas vitaminas.</p>"
+            },
+            {
+                id : "Intestino_delgado",
+                nombre : "Intestino Delgado",
+                funcion : "<p>Absorber la mayoría de los nutrientes.</p>",
+                descripcion : "<p>El intestino delgado es un tubo largo dividido en duodeno, yeyuno e íleon. En él se completa la digestión de carbohidratos, proteínas y grasas gracias a las enzimas pancreáticas y la bilis. Su mucosa tiene vellosidades intestinales que aumentan la superficie de absorción de nutrientes hacia la sangre y la linfa.</p>"
+            },
+            {
+                id : "pancreas",
+                nombre : "Páncreas",
+                funcion : "<p>Producir enzimas digestivas y hormonas.</p>",
+                descripcion : "<p>El páncreas es una glándula mixta que cumple funciones exocrinas y endocrinas. Su función exocrina consiste en la producción de jugo pancreático rico en enzimas que descomponen proteínas, grasas y carbohidratos en el intestino delgado. Su función endocrina incluye la secreción de insulina y glucagón, reguladores del nivel de glucosa en sangre.</p>"
+            },
+            {
+                id : "recto",
+                nombre : "Recto",
+                funcion : "<p>Almacenar temporalmente las heces.</p>",
+                descripcion : "<p>El recto es la parte final del intestino grueso. Su función principal es almacenar las heces antes de ser expulsadas por el ano. Sus paredes contienen receptores que detectan la distensión y activan el reflejo de la defecación.</p>"
+            },
+            {
+                id : "ano",
+                nombre : "Ano",
+                funcion : "<p>Expulsar las heces del cuerpo.</p>",
+                descripcion : "<p>El ano es la abertura terminal del sistema digestivo. Está rodeado por esfínteres internos y externos que permiten el control voluntario e involuntario de la defecación. Su función es la expulsión de los desechos sólidos fuera del organismo.</p>"
+            }
+        ]
+
+
+
+        import * as THREE from 'three';
+        import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+        let scene, camera, renderer, controls;
+
+        // Inicializar escena
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x222222);
+
+        // Cámara
+        camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(50, -50, 750);
+        camera.updateProjectionMatrix();
+
+        // Renderizador
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Controles orbitales
+        controls = new OrbitControls(camera, renderer.domElement);
+        const distanciaInicial = camera.position.length();
+
+        controls.maxDistance = distanciaInicial;
+        controls.minDistance = 50;
+        // Luz
+        const light = new THREE.HemisphereLight(0xffffff, 0x444444, 4.0); // el tercer parámetro es la intensidad
+        light.position.set(-120, 120, 120);
+        scene.add(light);
+
+        // Cargar modelo GLB
+        const loader = new GLTFLoader();
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        const objetosClickeables = []; // Aquí guardarás los nodos (meshes)
+        let objetoSeleccionado = null;
+        let colorOriginal = null;
+
+
+        let modeloADN = null;
+        loader.load(
+            'models/mios/sistema_digestivo.glb',
+            function (gltf) {
+                modeloADN = gltf.scene;
+                modeloADN.scale.set(17.5, 17.5, 17.5);
+                modeloADN.position.set(-150, -220, 0);
+                modeloADN.rotation.y = -0.1;
+                modeloADN.rotation.z = 0.05;
+                scene.add(modeloADN);
+
+                // Calcular centro del modelo
+                const box = new THREE.Box3().setFromObject(modeloADN);
+                const center = box.getCenter(new THREE.Vector3());
+
+                // Hacer que OrbitControls rote alrededor del modelo
+                controls.target.copy(center);
+                controls.update();
+
+                modeloADN.traverse((child) => {
+                    if (child.isMesh) {
+                        child.material = child.material.clone();
+                        child.materialOriginal = child.material.clone();
+                        objetosClickeables.push(child);
+                        console.log(
+                            'Nodo encontrado:',
+                            child.name,
+                            child.type
+                        );
+                    } else {
+                        console.log(
+                            'Nodo encontrado:',
+                            child.name,
+                            child.type
+                        );
+                    }
+                });
+            },
+            function (xhr) {
+                const porcentaje = (xhr.loaded / xhr.total * 100);
+                document.getElementById('barra').style.width = porcentaje + '%';
+                document.getElementById('barra-text').innerHTML =  porcentaje.toFixed(2) + '%';
+
+                if (xhr.loaded === xhr.total) {
+                    setTimeout(() => {
+                        document.getElementById('loading-container').style.display ='none';
+                    }, 2000);
+                }
+            },
+            function (error) {
+                console.error(
+                    'Error al cargar el modelo .glb',
+                    error
+                );
+            }
+        );
+
+        window.addEventListener('click', (event) => {
+            // Si el clic fue dentro del modal, salir
+            if (event.target.closest('.modal-flotante')) {
+                return;
+            }
+
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+
+            const intersects = raycaster.intersectObjects(objetosClickeables, true);
+
+            if (intersects.length > 0) {
+				const objetoActual = intersects[0].object;
+
+				// Si hay un objeto seleccionado anteriormente, restaurar su color
+				if (objetoSeleccionado){
+					objetoSeleccionado.material = objetoSeleccionado.materialOriginal.clone();
+				}
+
+				// Guardar el nuevo objeto seleccionado
+				objetoSeleccionado = objetoActual;
+				window.speechSynthesis.cancel();
+				// Guardar el color original solo si es un nuevo objeto
+				colorOriginal = objetoActual.materialOriginal.clone();
+				objetoActual.material.color.set(0xff0000);
+                posicionarModalEnPunto();
+				tooltip.style.display = 'none';
+			}
+        });
+
+        function posicionarModalEnPunto() {
+            if (!objetoSeleccionado) return;
+
+            const wp = new THREE.Vector3();
+
+            // Obtener posición global del objeto
+            objetoSeleccionado.getWorldPosition(wp);
+
+            // Convertir a coordenadas de pantalla
+            wp.project(camera);
+
+            const x = (wp.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-wp.y * 0.5 + 0.5) * window.innerHeight;
+
+            const modal = document.getElementById('miModal');
+
+            modal.style.position = 'absolute';
+            modal.style.left = `${x - modal.offsetWidth / 2}px`;
+			modal.style.top = `${y - modal.offsetHeight - 20}px`;
+
+            var info = null;
+            info = partesSistemaDigestivo.find(parte => parte.id === objetoSeleccionado.name);
+			if (info) {
+				modal.style.display = 'block';
+				document.getElementById('modal-nombre-texto').innerHTML = info.nombre;
+                document.getElementById('modal-descripcion-texto').innerHTML = info.descripcion;
+                document.getElementById('modal-funciones-texto').innerHTML = info.funcion;
+            } else {
+                modal.style.display = 'none';
+				document.getElementById('modal-nombre-texto').innerHTML = '';
+				document.getElementById('modal-descripcion-texto').innerHTML = '';
+				document.getElementById('modal-funciones-texto').innerHTML = '';
+            }
+        }
+
+		function actualizarModal() {
+            if (!objetoSeleccionado) return;
+            // Posición mundial del objeto
+            const posicion = new THREE.Vector3();
+            objetoSeleccionado.getWorldPosition(posicion);
+
+            // Convertir a coordenadas de pantalla
+            posicion.project(camera);
+
+            const x = (posicion.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-posicion.y * 0.5 + 0.5) * window.innerHeight;
+
+            const modal = document.getElementById('miModal');
+            modal.style.left = `${x}px`;
+            modal.style.top = `${y}px`;
+        }
+
+        
+        let objetoHover = null;
+		var tooltip = null;
+		let materialOriginal = null;
+		window.addEventListener('mousemove', (event) => {
+			//verificar si el color es rojo
+			
+			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+			mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+			raycaster.setFromCamera(mouse, camera);
+
+			const intersects = raycaster.intersectObjects(
+				objetosClickeables,
+				true
+			);
+
+			if (!tooltip) {
+				tooltip = document.createElement('div');
+				tooltip.id = 'tooltip';
+				document.body.appendChild(tooltip);
+			}
+
+			if (intersects.length > 0) {
+				const objeto = intersects[0].object;
+				const info = partesSistemaDigestivo.find(
+					parte => parte.id === objeto.name
+				);
+
+				// Si cambió de objeto
+				if (objetoHover !== objeto) {
+					// Restaurar color anterior
+					if (objetoHover && materialOriginal) {
+						if(objetoHover.material.color.getHex() != 0xff0000){
+							objetoHover.material.color.copy(materialOriginal);
+						}
+					}
+					// Guardar color original
+					objetoHover = objeto;
+					materialOriginal = objeto.material.color.clone();
+					// Aplicar gris
+					objeto.material.color.set(0xaaaaaa);
+					tooltip.innerHTML = info?.nombre?.toUpperCase();
+				}
+
+				if(info){
+					tooltip.style.display = 'block';
+					tooltip.style.left = (event.clientX + 15) + 'px';
+					tooltip.style.top = (event.clientY + 15) + 'px';
+				}else{
+					tooltip.style.display = 'none';
+				}
+			} else {
+				// Restaurar último objeto
+				if (objetoHover && materialOriginal ) {
+					if(objetoHover.material.color.getHex() != 0xff0000){
+						objetoHover.material.color.copy(materialOriginal);
+					}
+				}
+				objetoHover = null;
+				materialOriginal = null;
+				tooltip.style.display = 'none';
+			}
+		});
+
+		$('#cerrar-modal').click(function() {
+			window.speechSynthesis.cancel();
+			document.getElementById('miModal').style.display = 'none';
+			if (objetoSeleccionado){
+				objetoSeleccionado.material = objetoSeleccionado.materialOriginal.clone();
+			}
+		});
+
+        // Animación
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            actualizarModal();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Resize responsive
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+
+        const emularScroll = (factor) => {
+            const direccion = new THREE.Vector3();
+            direccion.subVectors(camera.position, controls.target).normalize(); // Dirección de la cámara
+
+            // Calcular nueva posición
+            const nuevaPosicion = camera.position.clone().addScaledVector(direccion, factor);
+
+            // Calcular la nueva distancia a target
+            const distancia = nuevaPosicion.distanceTo(controls.target);
+            console.log(distancia);
+
+            if (factor > 0) {
+                if (distancia < 737) {
+                    camera.position.copy(nuevaPosicion);
+                    controls.update();
+                }
+            } else {
+                if (distancia > 50) {
+                    camera.position.copy(nuevaPosicion);
+                    controls.update();
+                }
+            }
+        };
+
+
+        const controlesMovimiento = {
+            acercar: () => emularScroll(-50),
+            alejar: () => emularScroll(50),
+        };
+
+        const controlesRotacion = {
+            rotarX: () => { if (modeloADN) modeloADN.rotation.x += 0.1; },
+            rotarX_neg: () => { if (modeloADN) modeloADN.rotation.x -= 0.1; },
+            rotarY: () => { if (modeloADN) modeloADN.rotation.y += 0.1; },
+            rotarY_neg: () => { if (modeloADN) modeloADN.rotation.y -= 0.1; },
+        };
+
+        const moverCamara = {
+            arriba: () => { camera.position.y += 20; controls.target.y += 20; controls.update(); },
+            abajo: () => { camera.position.y -= 20; controls.target.y -= 20; controls.update(); },
+            izquierda: () => { camera.position.x -= 20; controls.target.x -= 20; controls.update(); },
+            derecha: () => { camera.position.x += 20; controls.target.x += 20; controls.update(); },
+            adelante: () => { camera.position.z -= 20; controls.target.z -= 20; controls.update(); },
+            atras: () => { camera.position.z += 20; controls.target.z += 20; controls.update(); },
+        };
+
+        const gui = new GUI();
+
+        const carpetaMovimiento = gui.addFolder('Mover cámara');
+        carpetaMovimiento.add(controlesMovimiento, 'acercar').name('Acercar <i class="fa-solid fa-plus"></i>');
+        carpetaMovimiento.add(controlesMovimiento, 'alejar').name('Alejar <i class="fa-solid fa-minus"></i>');
+
+        carpetaMovimiento.open();
+
+        const carpetaRotacion = gui.addFolder('Rotar modelo');
+
+        carpetaRotacion.add(controlesRotacion, 'rotarY').name('<i class="fa-solid fa-arrow-left"></i> Rotar');
+        carpetaRotacion.add(controlesRotacion, 'rotarY_neg').name('<i class="fa-solid fa-arrow-right"></i> Rotar');
+        carpetaRotacion.add(controlesRotacion, 'rotarX').name('<i class="fa-solid fa-arrow-up"></i> Rotar');
+        carpetaRotacion.add(controlesRotacion, 'rotarX_neg').name('<i class="fa-solid fa-arrow-down"></i> Rotar');
+
+        carpetaRotacion.open();
+
+        const carpetaMover = gui.addFolder('Mover cámara libre');
+        carpetaMover.add(moverCamara, 'arriba').name('Arriba <i class="fa-solid fa-arrow-up"></i>');
+        carpetaMover.add(moverCamara, 'abajo').name('Abajo <i class="fa-solid fa-arrow-down"></i>');
+        carpetaMover.add(moverCamara, 'izquierda').name('Izquierda <i class="fa-solid fa-arrow-left"></i>');
+        carpetaMover.add(moverCamara, 'derecha').name('Derecha <i class="fa-solid fa-arrow-right"></i>');
+
+        carpetaMover.open();
+
+        setTimeout(() => {
+            document.getElementsByClassName('title')[0].innerHTML = 'Controles del sistema';
+        }, 500);
+
+
+        document.addEventListener('mousedown', () => {
+            document.body.classList.add('grabbing');
+        });
+
+        document.addEventListener('mouseup', () => {
+            document.body.classList.remove('grabbing');
+        });
+
+        // Por si se suelta el clic fuera del navegador
+        document.addEventListener('mouseleave', () => {
+            document.body.classList.remove('grabbing');
+        });
+
+
+    </script>
+</body>
+
+</html>

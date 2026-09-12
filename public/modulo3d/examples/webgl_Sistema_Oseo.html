@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Sistema Oseo</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<link type="text/css" rel="stylesheet" href="main.css">
+	<link href="../bootstrap/bootstrap.min.css" rel="stylesheet">
+	<!-- Bootstrap JS (requerido para modales) -->
+	<script src="../bootstrap/bootstrap.bundle.min.js"></script>
+	<link rel="stylesheet" href="../bootstrap/style.css" />
+	<link rel="stylesheet" href="../fontawesome/css/all.min.css">
+	<script src="../jquery-3.7.1.min.js"></script>
+	<link rel="stylesheet" href="./css/index.css">
+</head>
+
+<body>
+
+	<div id="labels-container"></div>
+
+	<!-- Controls display for spaceship view -->
+	<div id="spaceship-controls" class="controls-display">
+		<div class="controls-title">Controles de la Nave:</div>
+		<div class="controls-container">
+			<div class="control-item">
+				<span class="key-symbol">W</span> Adelante
+			</div>
+			<div class="control-item"><span class="key-symbol">S</span> Atrás</div>
+			<div class="control-item">
+				<span class="key-symbol">A</span> Izquierda
+			</div>
+			<div class="control-item">
+				<span class="key-symbol">D</span> Derecha
+			</div>
+			<div class="control-item"><span class="key-symbol">Q</span> Arriba</div>
+			<div class="control-item"><span class="key-symbol">E</span> Abajo</div>
+			<div class="control-item">
+				<span class="key-symbol">⬆️⬇️⬅️➡️</span> Rotar
+			</div>
+		</div>
+	</div>
+
+	 <!-- Controls display for system view -->
+	 <div id="system-controls" class="controls-display">
+		<div class="controls-title">Controles del Sistema:</div>
+		<div class="control-item">
+			<span class="key-symbol">🖱️</span> Click izquierdo + Arrastrar para rotar cámara
+		</div>
+		<div class="control-item">
+			<span class="key-symbol">🖱️</span> Click derecho + arrastrar para mover el Modelo
+		</div>
+	</div>
+
+	<!-- Modal de información del planeta -->
+	<div id="miModal" class="modal-flotante">
+		<div class="d-flex justify-content-end align-items-center gap-3" id="botones-modal">
+			<span id="boton-hablar" ><i class="fa-solid fa-volume-high"></i></span>
+			<span class="cerrar-modal" id="cerrar-modal"><i style="color: red; font-size: 40px;" class="fa-solid fa-xmark"></i></span>
+		</div>
+        <h3 id="modal-nombre-texto">Cargando...</h3>
+        <!-- Botones de las Pestañas -->
+        <div class="pestanas-container">
+            <button class="btn-pestana activa" onclick="cambiarPestana(event, 'tab-descripcion')">Descripción</button>
+            <button class="btn-pestana" onclick="cambiarPestana(event, 'tab-funciones')">Funciones</button>
+        </div>
+    
+        <div id="tab-descripcion" class="contenido-pestana activa">
+            <p id="modal-descripcion-texto">Cargando...</p>
+			<button id="ver-modelo-3d-button" style="display: none;" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalIframeContent">Ver modelo 3D <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+        <div id="tab-funciones" class="contenido-pestana">
+            <p id="modal-funciones-texto">Cargando...</p>
+        </div>
+    </div>
+
+	<div class="modal fade" style="z-index: 100000000000000000;" id="modalIframeContent" tabindex="-1"
+		aria-labelledby="modalIframeLabel" aria-hidden="true">
+		<div class="modal-dialog modal-xl modal-dialog-centered" style="padding: 0px;">
+			<div class="modal-content" style="padding: 0px; overflow: hidden; height: 80vh;">
+				<div class="modal-body" style="padding: 0px;">
+					<iframe id="modalIframeContentIframe" src="" style="width: 100%; height: 100%;"></iframe>
+					<button style="position: absolute; bottom: 17px; right: 17px; border-radius: 21px;" class="btn btn-danger" data-bs-dismiss="modal" id="modalIframeClose">Cerrar <i class="fa-solid fa-xmark"></i></button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="container"></div>
+
+	<div id="loading-container">
+		<div class="loading-container-content">
+			<div id="loading-text">Cargando modelo</div>
+			<div class="contenedor" style="position: relative;">
+				<span id="barra-text">0%</span>
+				<div id="barra" class="barra">
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="info">Modelo 3D del sistema oseo</div>
+
+
+	<script type="importmap">
+		{
+			"imports": {
+				"three": "../build/three.module.js",
+				"three/addons/": "./jsm/"
+			}
+		}
+	</script>
+
+	<script src="./js/index.js"></script>
+
+	<script type="module">
+
+		var partesSistemaOseo = [
+			{
+				id: "Skeletal_Cranium_Calavera_0",
+				nombre: "Cráneo",
+				descripcion: "<p>Conjunto de huesos que protege el <strong>cerebro</strong> y forma la estructura de la cabeza, incluyendo la mandíbula y las cavidades oculares.</p>",
+				url_modelo_iframe: "webgl_Huesos_del_craneo.html"
+			},
+			{
+				id: "Skeletal_Esqueleto_0399",
+				nombre: "Esternón",
+				descripcion: "<p>Hueso plano ubicado en el centro del <strong>tórax</strong> que conecta las costillas por medio de los cartílagos costales, protegiendo órganos vitales.</p>"
+			},
+			{
+				id: "Skeletal_Esqueleto_0409",
+				nombre: "Costillas",
+				descripcion: "<p>Conjunto de 24 huesos curvos que forman la <strong>caja torácica</strong>, protegiendo pulmones y corazón.</p>"
+			},
+			{
+				id: "Skeletal_Esqueleto_0121",
+				nombre: "Clavícula",
+				descripcion: "<p>Hueso alargado que une el <strong>esternón</strong> con el <strong>hombro</strong>, facilitando el movimiento de los brazos.</p>"
+			},
+			{
+				id: "Skeletal_Esqueleto_0066",
+				nombre: "Columna vertebral",
+				descripcion: "<p>Estructura formada por 33 vértebras que protege la <strong>médula espinal</strong> y permite la flexibilidad del tronco.</p>",
+				url_modelo_iframe: "webgl_Huesos_de_la_Columna_Vertebral.html"
+			},
+			{
+				id: "Skeletal_Esqueleto_0008",
+				nombre: "Omóplatos",
+				descripcion: "<p>Huesos planos en la parte posterior de los hombros que sirven de punto de unión para músculos y articulaciones.</p>"
+			},
+			{
+				id: "Skeletal_Esqueleto_0060",
+				nombre: "Húmero",
+				descripcion: "<p>Hueso largo del brazo que se extiende desde el <strong>hombro</strong> hasta el <strong>codo</strong>.</p>"
+			},
+			{
+				id: "Skeletal_Esqueleto_0184",
+				nombre: "Radio",
+				descripcion: "<p>Hueso del antebrazo ubicado en el lado del <strong>pulgar</strong>, participa en el movimiento de rotación de la mano.</p>"
+			},
+			{
+				id: "Skeletal_Esqueleto_0379",
+				nombre: "Cúbito",
+				descripcion: "<p>Hueso del antebrazo situado en el lado opuesto al pulgar, esencial para la articulación del codo.</p>"
+			},
+			{
+				id: "Skeletal_Esqueleto_0168",
+				nombre: "Huesos de la mano",
+				descripcion: "<p>Incluyen <strong>carpianos, metacarpianos y falanges</strong>, permitiendo movimientos precisos y la manipulación de objetos.</p>",
+				url_modelo_iframe: "webgl_Huesos_de_la_Mano.html"
+			},
+			{
+				id: "Skeletal_Esqueleto_0123",
+				nombre: "Pelvis",
+				descripcion: "<p>Conjunto óseo que sostiene la parte superior del cuerpo y protege órganos como la <strong>vejiga</strong> y el <strong>intestino</strong>.</p>"
+			},
+			{
+				id: "Skeletal_Esqueleto_0420",
+				nombre: "Coxis y sacro",
+				descripcion: "<p>Parte final de la <strong>columna vertebral</strong>; el sacro conecta la columna con la pelvis y el coxis es un vestigio evolutivo.</p>"
+			},
+			{
+				id: "Skeletal_Esqueleto_0064",
+				nombre: "Fémur",
+				descripcion: "<p>Hueso más largo y fuerte del cuerpo, ubicado en el <strong>muslo</strong>, soporta el peso corporal.</p>"
+			},
+			{
+				id: "Skeletal_Esqueleto_0037",
+				nombre: "Rótula",
+				descripcion: "<p>Hueso pequeño y redondeado en la parte frontal de la <strong>rodilla</strong>, protege la articulación y facilita el movimiento.</p>"
+			},
+			{
+				id: "Skeletal_Esqueleto_0381",
+				nombre: "Tibia",
+				descripcion: "<p>Hueso grueso y fuerte de la pierna, ubicado en la parte frontal, soporta la mayor parte del peso corporal.</p>"
+			},
+			{
+				id: "Skeletal_Esqueleto_0062",
+				nombre: "Peroné",
+				descripcion: "<p>Hueso largo y delgado de la pierna, situado junto a la tibia, contribuye a la estabilidad del tobillo.</p>"
+			},
+			{
+				id: "Skeletal_Esqueleto_0059",
+				nombre: "Huesos del pie",
+				descripcion: "<p>Incluyen <strong>tarsianos, metatarsianos y falanges</strong>, fundamentales para la locomoción y el equilibrio.</p>",
+				url_modelo_iframe: "webgl_Huesos_del_pie.html"
+			}
+		];
+
+
+		import * as THREE from 'three';
+		import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+		import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+		import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+		let scene, camera, renderer, controls;
+
+		// Inicializar escena
+		scene = new THREE.Scene();
+		scene.background = new THREE.Color(0x222222);
+
+		// Cámara
+		camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
+		camera.position.set(300, 150, 500);
+		camera.updateProjectionMatrix();
+
+		// Renderizador
+		renderer = new THREE.WebGLRenderer({ antialias: true });
+		renderer.setSize(window.innerWidth, window.innerHeight);
+		document.body.appendChild(renderer.domElement);
+
+		// Controles orbitales
+		controls = new OrbitControls(camera, renderer.domElement);
+		const distanciaInicial = camera.position.length();
+
+		controls.maxDistance = distanciaInicial;
+		controls.minDistance = 50;
+		// Luz
+		const light = new THREE.HemisphereLight(0xffffff, 0x444444, 4.0); // el tercer parámetro es la intensidad
+		light.position.set(-120, 120, 120);
+		scene.add(light);
+
+		// Cargar modelo GLB
+		const loader = new GLTFLoader();
+		const raycaster = new THREE.Raycaster();
+		const mouse = new THREE.Vector2();
+		const objetosClickeables = []; // Aquí guardarás los nodos (meshes)
+		let objetoSeleccionado = null;
+		let colorOriginal = null;
+
+
+		let modeloADN = null;
+		loader.load(
+			'models/mios/sistema_oseo.glb',
+			function (gltf) {
+				modeloADN = gltf.scene;
+				modeloADN.scale.set(3.5, 3.5, 3.5);
+				modeloADN.position.set(-100, -350, 0);
+
+				modeloADN.rotation.y = 0.6;
+
+				scene.add(modeloADN);
+
+				// Centro del modelo para OrbitControls
+				const box = new THREE.Box3().setFromObject(modeloADN);
+				const center = box.getCenter(new THREE.Vector3());
+
+				controls.target.copy(center);
+				camera.lookAt(center);
+				controls.update();
+
+				modeloADN.traverse((child) => {
+					if (child.isMesh) {
+						child.material = child.material.clone();
+						child.materialOriginal = child.material.clone();
+						objetosClickeables.push(child);
+						console.log('Nodo encontrado:', child.name, child.type);
+					} else {
+						console.log('Nodo encontrado:', child.name, child.type);
+					}
+				});
+			},
+			function (xhr) {
+				document.getElementById('barra').style.width = (xhr.loaded / xhr.total * 100) + '%';
+				document.getElementById('barra-text').innerHTML = (xhr.loaded / xhr.total * 100).toFixed(2) + '%';	
+				if (xhr.loaded === xhr.total) {
+					setTimeout(() => {
+						document.getElementById('loading-container').style.display = 'none';
+					}, 2000);	
+				}
+			},
+			function (error) {
+				console.error('Error al cargar el modelo .glb', error);
+			}
+		);
+
+		window.addEventListener('click', (event) => {
+			// Si el clic fue dentro del modal, salir
+			if (event.target.closest('.modal-flotante')) {
+				return;
+			}
+
+			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+			mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+			raycaster.setFromCamera(mouse, camera);
+
+			const intersects = raycaster.intersectObjects(objetosClickeables, true);
+
+			if (intersects.length > 0) {
+				const objeto = intersects[0].object;
+				const info = partesSistemaOseo.find(parte => parte.id === objeto.name);
+
+				if (objetoSeleccionado){
+					objetoSeleccionado.material = objetoSeleccionado.materialOriginal.clone();
+				}
+
+				// Guardar el nuevo objeto seleccionado
+				objetoSeleccionado = objeto;
+				window.speechSynthesis.cancel();
+				// Guardar el color original solo si es un nuevo objeto
+				colorOriginal = objeto.materialOriginal.clone();
+				objeto.material.color.set(0xff0000);
+				posicionarModalEnPunto();
+				tooltip.style.display = 'none';
+			}
+		});
+
+		function posicionarModalEnPunto() {
+            if (!objetoSeleccionado) return;
+
+            const wp = new THREE.Vector3();
+
+            // Obtener posición global del objeto
+            objetoSeleccionado.getWorldPosition(wp);
+
+            // Convertir a coordenadas de pantalla
+            wp.project(camera);
+
+            const x = (wp.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-wp.y * 0.5 + 0.5) * window.innerHeight;
+
+            const modal = document.getElementById('miModal');
+
+            modal.style.display = 'block';
+            modal.style.position = 'absolute';
+            modal.style.left = `${x}px`;
+            modal.style.top = `${y}px`;
+
+            var info = null;
+            info = partesSistemaOseo.find(parte => parte.id === objetoSeleccionado.name);
+            document.getElementById('modal-nombre-texto').innerHTML = info.nombre;
+            document.getElementById('modal-descripcion-texto').innerHTML = info.descripcion;
+            document.getElementById('modal-funciones-texto').innerHTML = info.funciones;
+
+			if (info.url_modelo_iframe) {
+				document.getElementById('modalIframeContentIframe').src = info.url_modelo_iframe;
+				document.getElementById('ver-modelo-3d-button').style.display = 'block';
+			} else {
+				document.getElementById('modalIframeContentIframe').src = '';
+				document.getElementById('ver-modelo-3d-button').style.display = 'none';
+			}
+        }
+
+        function actualizarModal() {
+            if (!objetoSeleccionado) return;
+            // Posición mundial del objeto
+            const posicion = new THREE.Vector3();
+            objetoSeleccionado.getWorldPosition(posicion);
+
+            // Convertir a coordenadas de pantalla
+            posicion.project(camera);
+
+            const x = (posicion.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-posicion.y * 0.5 + 0.5) * window.innerHeight;
+
+            const modal = document.getElementById('miModal');
+            modal.style.left = `${x}px`;
+            modal.style.top = `${y}px`;
+        }
+
+        
+        let objetoHover = null;
+		var tooltip = null;
+		let materialOriginal = null;
+		window.addEventListener('mousemove', (event) => {
+			//verificar si el color es rojo
+			
+			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+			mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+			raycaster.setFromCamera(mouse, camera);
+
+			const intersects = raycaster.intersectObjects(
+				objetosClickeables,
+				true
+			);
+
+			if (!tooltip) {
+				tooltip = document.createElement('div');
+				tooltip.id = 'tooltip';
+				document.body.appendChild(tooltip);
+			}
+
+			if (intersects.length > 0) {
+				const objeto = intersects[0].object;
+				const info = partesSistemaOseo.find(
+					parte => parte.id === objeto.name
+				);
+
+				// Si cambió de objeto
+				if (objetoHover !== objeto) {
+					// Restaurar color anterior
+					if (objetoHover && materialOriginal) {
+						if(objetoHover.material.color.getHex() != 0xff0000){
+							objetoHover.material.color.copy(materialOriginal);
+						}
+					}
+					// Guardar color original
+					objetoHover = objeto;
+					materialOriginal = objeto.material.color.clone();
+					// Aplicar gris
+					objeto.material.color.set(0xaaaaaa);
+					tooltip.innerHTML = info?.nombre?.toUpperCase();
+				}
+
+				if(info){
+					tooltip.style.display = 'block';
+					tooltip.style.left = (event.clientX + 15) + 'px';
+					tooltip.style.top = (event.clientY + 15) + 'px';
+				}else{
+					tooltip.style.display = 'none';
+				}
+			} else {
+				// Restaurar último objeto
+				if (objetoHover && materialOriginal ) {
+					if(objetoHover.material.color.getHex() != 0xff0000){
+						objetoHover.material.color.copy(materialOriginal);
+					}
+				}
+				objetoHover = null;
+				materialOriginal = null;
+				tooltip.style.display = 'none';
+			}
+		});
+
+        $('#cerrar-modal').click(function() {
+			window.speechSynthesis.cancel();
+			document.getElementById('miModal').style.display = 'none';
+			if (objetoSeleccionado){
+				objetoSeleccionado.material = objetoSeleccionado.materialOriginal.clone();
+			}
+		});
+
+
+
+		// Animación
+		function animate() {
+			requestAnimationFrame(animate);
+			controls.update();
+			actualizarModal();
+			renderer.render(scene, camera);
+		}
+		animate();
+
+		// Resize responsive
+		window.addEventListener('resize', () => {
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+		});
+
+
+		const emularScroll = (factor) => {
+			const direccion = new THREE.Vector3();
+			direccion.subVectors(camera.position, controls.target).normalize(); // Dirección de la cámara
+
+			// Calcular nueva posición
+			const nuevaPosicion = camera.position.clone().addScaledVector(direccion, factor);
+
+			// Calcular la nueva distancia a target
+			const distancia = nuevaPosicion.distanceTo(controls.target);
+			console.log(distancia);
+
+			if (factor > 0) {
+				if (distancia < 737) {
+					camera.position.copy(nuevaPosicion);
+					controls.update();
+				}
+			} else {
+				if (distancia > 50) {
+					camera.position.copy(nuevaPosicion);
+					controls.update();
+				}
+			}
+		};
+
+
+		const controlesMovimiento = {
+			acercar: () => emularScroll(-50),
+			alejar: () => emularScroll(50),
+		};
+
+		const controlesRotacion = {
+			rotarY: () => { if (modeloADN) modeloADN.rotation.y += 0.1; },
+			rotarY_neg: () => { if (modeloADN) modeloADN.rotation.y -= 0.1; },
+		};
+
+		const moverCamara = {
+			arriba: () => { camera.position.y += 20; controls.target.y += 20; controls.update(); },
+			abajo: () => { camera.position.y -= 20; controls.target.y -= 20; controls.update(); },
+			izquierda: () => { camera.position.x -= 20; controls.target.x -= 20; controls.update(); },
+			derecha: () => { camera.position.x += 20; controls.target.x += 20; controls.update(); },
+			adelante: () => { camera.position.z -= 20; controls.target.z -= 20; controls.update(); },
+			atras: () => { camera.position.z += 20; controls.target.z += 20; controls.update(); },
+		};
+
+		const gui = new GUI();
+
+		const carpetaMovimiento = gui.addFolder('Mover cámara');
+		carpetaMovimiento.add(controlesMovimiento, 'acercar').name('Acercar <i class="fa-solid fa-plus"></i>');
+		carpetaMovimiento.add(controlesMovimiento, 'alejar').name('Alejar <i class="fa-solid fa-minus"></i>');
+
+		carpetaMovimiento.open();
+
+		const carpetaRotacion = gui.addFolder('Rotar modelo');
+
+		carpetaRotacion.add(controlesRotacion, 'rotarY').name('<i class="fa-solid fa-arrow-left"></i> Rotar');
+		carpetaRotacion.add(controlesRotacion, 'rotarY_neg').name('<i class="fa-solid fa-arrow-right"></i> Rotar');
+
+		carpetaRotacion.open();
+
+		const carpetaMover = gui.addFolder('Mover cámara libre');
+		carpetaMover.add(moverCamara, 'arriba').name('Arriba <i class="fa-solid fa-arrow-up"></i>');
+		carpetaMover.add(moverCamara, 'abajo').name('Abajo <i class="fa-solid fa-arrow-down"></i>');
+		carpetaMover.add(moverCamara, 'izquierda').name('Izquierda <i class="fa-solid fa-arrow-left"></i>');
+		carpetaMover.add(moverCamara, 'derecha').name('Derecha <i class="fa-solid fa-arrow-right"></i>');
+		carpetaMover.add(moverCamara, 'adelante').name('Adelante <i class="fa-solid fa-arrow-up"></i>');
+		carpetaMover.add(moverCamara, 'atras').name('Atrás <i class="fa-solid fa-arrow-down"></i>');
+
+		carpetaMover.open();
+
+		setTimeout(() => {
+			document.getElementsByClassName('title')[0].innerHTML = 'Controles del sistema';
+		}, 500);
+
+
+		document.addEventListener('mousedown', () => {
+			document.body.classList.add('grabbing');
+		});
+
+		document.addEventListener('mouseup', () => {
+			document.body.classList.remove('grabbing');
+		});
+
+		// Por si se suelta el clic fuera del navegador
+		document.addEventListener('mouseleave', () => {
+			document.body.classList.remove('grabbing');
+		});
+
+
+	</script>
+</body>
+
+</html>

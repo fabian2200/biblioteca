@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Huesos de la mano</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<link type="text/css" rel="stylesheet" href="main.css">
+	<link href="../bootstrap/bootstrap.min.css" rel="stylesheet">
+	<!-- Bootstrap JS (requerido para modales) -->
+	<script src="../bootstrap/bootstrap.bundle.min.js"></script>
+	<link rel="stylesheet" href="../bootstrap/style.css" />
+	<link rel="stylesheet" href="../fontawesome/css/all.min.css">
+	<script src="../jquery-3.7.1.min.js"></script>
+	<link rel="stylesheet" href="./css/index.css">
+</head>
+
+<body>
+
+	<div id="labels-container"></div>
+
+	<!-- Controls display for spaceship view -->
+	<div id="spaceship-controls" class="controls-display">
+		<div class="controls-title">Controles de la Nave:</div>
+		<div class="controls-container">
+			<div class="control-item">
+				<span class="key-symbol">W</span> Adelante
+			</div>
+			<div class="control-item"><span class="key-symbol">S</span> Atrás</div>
+			<div class="control-item">
+				<span class="key-symbol">A</span> Izquierda
+			</div>
+			<div class="control-item">
+				<span class="key-symbol">D</span> Derecha
+			</div>
+			<div class="control-item"><span class="key-symbol">Q</span> Arriba</div>
+			<div class="control-item"><span class="key-symbol">E</span> Abajo</div>
+			<div class="control-item">
+				<span class="key-symbol">⬆️⬇️⬅️➡️</span> Rotar
+			</div>
+		</div>
+	</div>
+
+	<!-- Controls display for system view -->
+	<div id="system-controls" class="controls-display">
+		<div class="controls-title">Controles del Sistema:</div>
+		<div class="control-item">
+			<span class="key-symbol">🖱️</span> Click izquierdo + Arrastrar para rotar cámara
+		</div>
+		<div class="control-item">
+			<span class="key-symbol">🖱️</span> Click derecho + arrastrar para mover el Modelo
+		</div>
+	</div>
+
+	<!-- Modal de información del planeta -->
+	<div id="miModal" class="modal-flotante">
+		<div class="d-flex justify-content-end align-items-center gap-3" id="botones-modal">
+			<span id="boton-hablar" ><i class="fa-solid fa-volume-high"></i></span>
+			<span class="cerrar-modal" onclick="cerrarModal()"><i style="color: red; font-size: 40px;" class="fa-solid fa-xmark"></i></span>
+		</div>
+        <h3 id="modal-nombre-texto">Cargando...</h3>
+        <!-- Botones de las Pestañas -->
+        <div class="pestanas-container">
+            <button class="btn-pestana activa" onclick="cambiarPestana(event, 'tab-descripcion')">Descripción</button>
+            <button class="btn-pestana" onclick="cambiarPestana(event, 'tab-funciones')">Funciones</button>
+        </div>
+    
+        <div id="tab-descripcion" class="contenido-pestana activa">
+            <p id="modal-descripcion-texto">Cargando...</p>
+        </div>
+        <div id="tab-funciones" class="contenido-pestana">
+            <p id="modal-funciones-texto">Cargando...</p>
+        </div>
+    </div>
+
+	<div id="container"></div>
+
+	<div id="loading-container">
+		<div class="loading-container-content">
+			<div id="loading-text">Cargando modelo</div>
+			<div class="contenedor" style="position: relative;">
+				<span id="barra-text">0%</span>
+				<div id="barra" class="barra">
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="info" style="font-size: 18px; padding: 8px;">Huesos de la mano</div>
+
+
+	<script type="importmap">
+		{
+			"imports": {
+				"three": "../build/three.module.js",
+				"three/addons/": "./jsm/"
+			}
+		}
+	</script>
+
+	<script src="./js/index.js"></script>
+
+	<script type="module">
+
+		var partesHuesosMano = [
+			{
+				id: "Skeletal_Esqueleto_0184",
+				nombre: "Radio",
+				descripcion: "<p>Situado en el antebrazo, el radio se extiende desde el codo hasta la muñeca y es un componente esencial para la flexión, extensión y rotación de la mano y el antebrazo. <br> El radio, junto con el cúbito, forma la pareja de huesos del antebrazo. Ambos trabajan en conjunto para dar a esta área del cuerpo humano su característica versatilidad y rango de movimiento. El radio se encuentra en el lado lateral del antebrazo, es decir, del lado del pulgar, mientras que el cúbito se encuentra en el lado medial, o lado del meñique.</p>"
+			},
+			{
+				id: "Skeletal_Esqueleto_0379",
+				nombre: "Cúbito",
+				descripcion: "<p>El cúbito es el hueso más largo del antebrazo. Ayuda a mover el brazo, la muñeca y la mano. El cúbito también sostiene numerosos músculos, tendones , ligamentos y vasos sanguíneos importantes.<br> Si sufre una fractura de cúbito, es posible que necesite cirugía para reparar el hueso y fisioterapia para ayudarlo a recuperar su fuerza y capacidad de moverse.<br> El cúbito, como todos los huesos, puede verse afectado por la osteoporosis.<br> Debido a que el cúbito está conectado a tantos músculos y nervios, las lesiones en uno a menudo pueden afectar a los demás.</p>"
+			},
+			{
+				id: "Skeletal_Esqueleto_0090",
+				nombre: "Hueso Trapecio",
+				descripcion: "<p>El hueso trapecio, también conocido como hueso multangular mayor, es uno de los ocho huesos del carpo (muñeca) en la mano. Se encuentra en la fila distal de los huesos del carpo, en la base del pulgar. Su función principal es proporcionar soporte estructural a la muñeca y permitir movimientos precisos del pulgar, como la oposición.</p>"
+			},
+			{
+				id: "Skeletal_Esqueleto_0089",
+				nombre: "Hueso Trapezoide",
+				descripcion: "<p>El hueso trapezoide es uno de los ocho huesos carpianos que forman la muñeca, específicamente en la fila distal, y se encuentra entre el trapecio y el hueso grande. Es un hueso pequeño con forma de cuña que juega un papel importante en la movilidad y estabilidad de la mano.</p>"
+			},
+			{
+				id: "Skeletal_Esqueleto_0092",
+				nombre: "Hueso Grande",
+				descripcion: "<p>El hueso grande en la mano, también conocido como hueso capitado, es el hueso más grande del carpo (muñeca) y se encuentra en la fila distal. Se localiza en el centro de la muñeca, debajo del hueso semilunar y el escafoides. Articula con varios huesos, incluyendo el escafoides, semilunar, trapezoide, ganchoso, y los metacarpianos segundo, tercero y cuarto.</p>"
+			},
+			{
+				id: "Skeletal_Esqueleto_0098",
+				nombre: "Hueso Ganchoso",
+				descripcion: "<p>El hueso ganchoso, también llamado hueso unciforme, es uno de los ocho huesos del carpo en la muñeca. Se encuentra en la fila distal del carpo, en la parte medial de la muñeca, y se caracteriza por tener un gancho prominente que se proyecta hacia la palma de la mano.</p>"
+			},
+			{
+				id: "Skeletal_Esqueleto_0094",
+				nombre: "Hueso Pisiforme",
+				descripcion: "<p>El hueso pisiforme es un pequeño hueso sesamoideo ubicado en la cara palmar de la muñeca, específicamente en la fila proximal del carpo, sobre el hueso piramidal. Es el hueso más pequeño de la fila proximal del carpo y se caracteriza por su forma esferoidal. Actúa como un hueso sesamoideo, insertándose en el tendón del músculo flexor cubital del carpo, lo que contribuye a la estabilidad de la muñeca.</p>"
+			},
+			{
+				id: "Skeletal_Esqueleto_0103",	
+				nombre: "Hueso Piramidal",
+				descripcion: "<p>El hueso piramidal, también llamado hueso triquetro, es un hueso corto y esponjoso de la muñeca, con forma de pirámide, que se encuentra en la fila proximal del carpo. Forma parte de la articulación de la muñeca y se articula con el hueso semilunar lateralmente, el hueso ganchoso distalmente y el hueso pisiforme medialmente.</p>"
+			},
+			{
+				id: "Skeletal_Esqueleto_0101",
+				nombre: "Hueso Semilunar",
+				descripcion: "<p>El hueso semilunar, también conocido como hueso lunar o lunate, es un hueso del carpo de la mano, ubicado en la fila proximal, con forma de media luna. Se encuentra entre el escafoides y el piramidal, y se articula con el radio, el hueso grande y el hueso ganchoso.</p>"
+			},
+			{
+				id: "Skeletal_Esqueleto_0096",
+				nombre: "Hueso Escafoides",
+				descripcion: "<p>El hueso escafoides es uno de los huesos del carpo en la muñeca, ubicado en la parte radial (lado del pulgar). Es el hueso más grande de la fila proximal del carpo y tiene forma de barco, de ahí su nombre (derivado del griego 'skaphos' que significa barco). Este hueso es crucial para la movilidad y estabilidad de la muñeca, y es propenso a fracturas, especialmente por caídas sobre la mano extendida. </p>"
+			},
+			{
+				id: "Skeletal_Esqueleto_0153",
+				nombre: "Metacarpianos",
+				descripcion: "<p>En cuanto a los huesos de la palma de la mano, metacarpo o metacarpianos, también pueden dividirse según su ubicación, es decir, el dedo al que corresponden ordenados desde el pulgar hacia fuera:</p><ul><li>Primer metacarpiano</li><li>Segundo metacarpiano</li><li>Tercer metacarpiano</li><li>Cuarto metacarpiano</li><li>Quinto metacarpiano</li></ul>"
+			},
+			{
+				id: "Skeletal_Esqueleto_0164",
+				nombre: "Falanges proximales",
+				descripcion: "<p>Las falanges proximales son los huesos más cercanos a la palma de la mano, formando la base de cada dedo. Son los huesos más grandes de cada dedo y se articulan con los huesos metacarpianos en las articulaciones metacarpofalángicas. <br><br><strong>Ubicación:</strong> Se encuentran en la base de cada dedo, más cerca de la palma. <br><br><strong>Articulaciones:</strong> Se conectan con los huesos metacarpianos en las articulaciones metacarpofalángicas (nudillos). <br><br><strong>Forma:</strong> Son huesos largos, con una base proximal que se articula con el metacarpiano, un cuerpo y una cabeza distal que se articula con la falange media (o distal en el pulgar). <br><br><strong>Tamaño:</strong> Son los huesos más grandes de cada dedo. <br><br><strong>Función:</strong> Permiten la flexión, extensión y otros movimientos de los dedos. </p>"
+			},
+			{
+				id: "Skeletal_Esqueleto_0163",
+				nombre: "Falanges intermedias",
+				descripcion: "<p>Las falanges intermedias, también llamadas falanges medias, son los huesos que se encuentran entre las articulaciones de los dedos de las manos. Cada dedo, excepto el pulgar, tiene una falange intermedia. Estas falanges tienen una forma alargada y están conectadas a las falanges proximales y distales por articulaciones. <br><br><strong>Ubicación:</strong> Se encuentran en la parte media de cada dedo, entre la falange proximal y la distal. <br><br><strong>Estructura:</strong><br> Cada falange intermedia tiene una base, un cuerpo y una cabeza, la <strong>base</strong> de cada falange intermedia tiene dos facetas articulares cóncavas que se conectan con la cabeza de la falange proximal correspondiente, el <strong>cuerpo</strong> es la parte alargada del hueso y la <strong>cabeza</strong> de la falange intermedia tiene una sola faceta articular que se conecta con la falange distal. <br><br><strong>Número:</strong> Hay cuatro falanges intermedias en cada mano (excluyendo el pulgar, que solo tiene dos falanges). </p>"
+			},
+			{
+				id: "Skeletal_Esqueleto_0162",
+				nombre: "Falanges distales",
+				descripcion: "<p>Las falanges distales de la mano son los huesos más pequeños y terminales de cada dedo, ubicados en la punta de los dedos, justo debajo de la uña. Están articuladas con las falanges medias, excepto en el pulgar, donde se articulan directamente con la falange proximal. <br><br><strong>Ubicación:</strong> Se encuentran en la punta de cada dedo, distal a la falange media (o proximal en el caso del pulgar). <br><br><strong>Estructura:</strong><br> Cada falange distal consta de una base, un cuerpo y una cabeza. <br><br><strong>Función:</strong><br><ul><li>Proporcionan soporte a la uña.</li><li>Permiten movimientos de flexión y extensión de las articulaciones interfalángicas distales.</li><li>Junto con la falange media, son importantes para la estabilidad de la punta del dedo.</li><li>Contribuyen a la sensibilidad y percepción táctil de la punta de los dedos.</li></ul></p>"
+			}
+		];
+
+
+		import * as THREE from 'three';
+		import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+		import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+		import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+		let scene, camera, renderer, controls;
+
+		// Inicializar escena
+		scene = new THREE.Scene();
+		scene.background = new THREE.Color(0x222222);
+
+		// Cámara
+		camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
+		camera.position.set(300, 150, 500);
+		camera.updateProjectionMatrix();
+
+		// Renderizador
+		renderer = new THREE.WebGLRenderer({ antialias: true });
+		renderer.setSize(window.innerWidth, window.innerHeight);
+		document.body.appendChild(renderer.domElement);
+
+		// Controles orbitales
+		controls = new OrbitControls(camera, renderer.domElement);
+		const distanciaInicial = camera.position.length();
+
+		controls.maxDistance = distanciaInicial;
+		controls.minDistance = 50;
+		// Luz
+		const light = new THREE.HemisphereLight(0xffffff, 0x444444, 4.0); // el tercer parámetro es la intensidad
+		light.position.set(-120, 120, 120);
+		scene.add(light);
+
+		// Cargar modelo GLB
+		const loader = new GLTFLoader();
+		const raycaster = new THREE.Raycaster();
+		const mouse = new THREE.Vector2();
+		const objetosClickeables = []; // Aquí guardarás los nodos (meshes)
+		let objetoSeleccionado = null;
+		let colorOriginal = null;
+
+
+		let modeloADN = null;
+		loader.load(
+			'models/mios/mano.glb',
+			function (gltf) {
+				modeloADN = gltf.scene;
+				modeloADN.scale.set(13.5, 13.5, 13.5);
+				modeloADN.position.set(-150, -490, 0);
+
+				modeloADN.rotation.y = 0.7;
+				modeloADN.rotation.x = -0.1;
+
+				scene.add(modeloADN);
+
+				// Centro del modelo para OrbitControls
+				const box = new THREE.Box3().setFromObject(modeloADN);
+				const center = box.getCenter(new THREE.Vector3());
+
+				controls.target.copy(center);
+				camera.lookAt(center);
+				controls.update();
+
+				modeloADN.traverse((child) => {
+					if (child.isMesh) {
+						child.material = child.material.clone();
+						child.materialOriginal = child.material.clone();
+						objetosClickeables.push(child);
+						console.log('Nodo encontrado:', child.name, child.type);
+					} else {
+						console.log('Nodo encontrado:', child.name, child.type);
+					}
+				});
+			},
+			function (xhr) {
+				document.getElementById('barra').style.width = (xhr.loaded / xhr.total * 100) + '%';
+				document.getElementById('barra-text').innerHTML = (xhr.loaded / xhr.total * 100).toFixed(2) + '%';	
+				if (xhr.loaded === xhr.total) {
+					setTimeout(() => {
+						document.getElementById('loading-container').style.display = 'none';
+					}, 2000);	
+				}
+			},
+			function (error) {
+				console.error('Error al cargar el modelo .glb', error);
+			}
+		);
+
+		window.addEventListener('click', (event) => {
+			// Si el clic fue dentro del modal, salir
+			if (event.target.closest('.modal-flotante')) {
+				return;
+			}
+
+			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+			mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+			raycaster.setFromCamera(mouse, camera);
+
+			const intersects = raycaster.intersectObjects(objetosClickeables, true);
+
+			if (intersects.length > 0) {
+				const objeto = intersects[0].object;
+				const info = partesHuesosMano.find(parte => parte.id === objeto.name);
+
+				if (objetoSeleccionado){
+					objetoSeleccionado.material = objetoSeleccionado.materialOriginal.clone();
+				}
+
+				// Guardar el nuevo objeto seleccionado
+				objetoSeleccionado = objeto;
+				window.speechSynthesis.cancel();
+				// Guardar el color original solo si es un nuevo objeto
+				colorOriginal = objeto.materialOriginal.clone();
+				objeto.material.color.set(0xff0000);
+				posicionarModalEnPunto();
+				tooltip.style.display = 'none';
+			}
+		});
+
+		function posicionarModalEnPunto() {
+            if (!objetoSeleccionado) return;
+
+            const wp = new THREE.Vector3();
+
+            // Obtener posición global del objeto
+            objetoSeleccionado.getWorldPosition(wp);
+
+            // Convertir a coordenadas de pantalla
+            wp.project(camera);
+
+            const x = (wp.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-wp.y * 0.5 + 0.5) * window.innerHeight;
+
+            const modal = document.getElementById('miModal');
+
+            modal.style.display = 'block';
+            modal.style.position = 'absolute';
+            modal.style.left = `${x}px`;
+            modal.style.top = `${y}px`;
+
+            var info = null;
+            info = partesHuesosMano.find(parte => parte.id === objetoSeleccionado.name);
+            document.getElementById('modal-nombre-texto').innerHTML = info.nombre;
+            document.getElementById('modal-descripcion-texto').innerHTML = info.descripcion;
+            document.getElementById('modal-funciones-texto').innerHTML = info.funciones;
+        }
+
+        function actualizarModal() {
+            if (!objetoSeleccionado) return;
+            // Posición mundial del objeto
+            const posicion = new THREE.Vector3();
+            objetoSeleccionado.getWorldPosition(posicion);
+
+            // Convertir a coordenadas de pantalla
+            posicion.project(camera);
+
+            const x = (posicion.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-posicion.y * 0.5 + 0.5) * window.innerHeight;
+
+            const modal = document.getElementById('miModal');
+            modal.style.left = `${x}px`;
+            modal.style.top = `${y}px`;
+        }
+
+        
+        let objetoHover = null;
+		var tooltip = null;
+		let materialOriginal = null;
+		window.addEventListener('mousemove', (event) => {
+			//verificar si el color es rojo
+			
+			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+			mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+			raycaster.setFromCamera(mouse, camera);
+
+			const intersects = raycaster.intersectObjects(
+				objetosClickeables,
+				true
+			);
+
+			if (!tooltip) {
+				tooltip = document.createElement('div');
+				tooltip.id = 'tooltip';
+				document.body.appendChild(tooltip);
+			}
+
+			if (intersects.length > 0) {
+				const objeto = intersects[0].object;
+				const info = partesHuesosMano.find(
+					parte => parte.id === objeto.name
+				);
+
+				// Si cambió de objeto
+				if (objetoHover !== objeto) {
+					// Restaurar color anterior
+					if (objetoHover && materialOriginal) {
+						if(objetoHover.material.color.getHex() != 0xff0000){
+							objetoHover.material.color.copy(materialOriginal);
+						}
+					}
+					// Guardar color original
+					objetoHover = objeto;
+					materialOriginal = objeto.material.color.clone();
+					// Aplicar gris
+					objeto.material.color.set(0xaaaaaa);
+					tooltip.innerHTML = info?.nombre?.toUpperCase();
+				}
+
+				if(info){
+					tooltip.style.display = 'block';
+					tooltip.style.left = (event.clientX + 15) + 'px';
+					tooltip.style.top = (event.clientY + 15) + 'px';
+				}else{
+					tooltip.style.display = 'none';
+				}
+			} else {
+				// Restaurar último objeto
+				if (objetoHover && materialOriginal ) {
+					if(objetoHover.material.color.getHex() != 0xff0000){
+						objetoHover.material.color.copy(materialOriginal);
+					}
+				}
+				objetoHover = null;
+				materialOriginal = null;
+				tooltip.style.display = 'none';
+			}
+		});
+
+        $('#cerrar-modal').click(function() {
+			window.speechSynthesis.cancel();
+			document.getElementById('miModal').style.display = 'none';
+			if (objetoSeleccionado){
+				objetoSeleccionado.material = objetoSeleccionado.materialOriginal.clone();
+			}
+		});
+
+
+		// Animación
+		function animate() {
+			requestAnimationFrame(animate);
+			controls.update();
+			actualizarModal();
+			renderer.render(scene, camera);
+		}
+		animate();
+
+		// Resize responsive
+		window.addEventListener('resize', () => {
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+		});
+
+
+		const emularScroll = (factor) => {
+			const direccion = new THREE.Vector3();
+			direccion.subVectors(camera.position, controls.target).normalize(); // Dirección de la cámara
+
+			// Calcular nueva posición
+			const nuevaPosicion = camera.position.clone().addScaledVector(direccion, factor);
+
+			// Calcular la nueva distancia a target
+			const distancia = nuevaPosicion.distanceTo(controls.target);
+			console.log(distancia);
+
+			if (factor > 0) {
+				if (distancia < 737) {
+					camera.position.copy(nuevaPosicion);
+					controls.update();
+				}
+			} else {
+				if (distancia > 50) {
+					camera.position.copy(nuevaPosicion);
+					controls.update();
+				}
+			}
+		};
+
+
+		const controlesMovimiento = {
+			acercar: () => emularScroll(-50),
+			alejar: () => emularScroll(50),
+		};
+
+		const controlesRotacion = {
+			rotarX: () => { if (modeloADN) modeloADN.rotation.x += 0.1; },
+			rotarX_neg: () => { if (modeloADN) modeloADN.rotation.x -= 0.1; },
+			rotarY: () => { if (modeloADN) modeloADN.rotation.y += 0.1; },
+			rotarY_neg: () => { if (modeloADN) modeloADN.rotation.y -= 0.1; },
+		};
+
+		const moverCamara = {
+			arriba: () => { camera.position.y += 20; controls.target.y += 20; controls.update(); },
+			abajo: () => { camera.position.y -= 20; controls.target.y -= 20; controls.update(); },
+			izquierda: () => { camera.position.x -= 20; controls.target.x -= 20; controls.update(); },
+			derecha: () => { camera.position.x += 20; controls.target.x += 20; controls.update(); },
+			adelante: () => { camera.position.z -= 20; controls.target.z -= 20; controls.update(); },
+			atras: () => { camera.position.z += 20; controls.target.z += 20; controls.update(); },
+		};
+
+		const gui = new GUI();
+
+		const carpetaMovimiento = gui.addFolder('Mover cámara');
+		carpetaMovimiento.add(controlesMovimiento, 'acercar').name('Acercar <i class="fa-solid fa-plus"></i>');
+		carpetaMovimiento.add(controlesMovimiento, 'alejar').name('Alejar <i class="fa-solid fa-minus"></i>');
+
+		carpetaMovimiento.open();
+
+		const carpetaRotacion = gui.addFolder('Rotar modelo');
+
+		carpetaRotacion.add(controlesRotacion, 'rotarY').name('<i class="fa-solid fa-arrow-left"></i> Rotar');
+		carpetaRotacion.add(controlesRotacion, 'rotarY_neg').name('<i class="fa-solid fa-arrow-right"></i> Rotar');
+		carpetaRotacion.add(controlesRotacion, 'rotarX').name('<i class="fa-solid fa-arrow-up"></i> Rotar');
+		carpetaRotacion.add(controlesRotacion, 'rotarX_neg').name('<i class="fa-solid fa-arrow-down"></i> Rotar');
+
+		carpetaRotacion.open();
+
+		const carpetaMover = gui.addFolder('Mover cámara libre');
+		carpetaMover.add(moverCamara, 'arriba').name('Arriba <i class="fa-solid fa-arrow-up"></i>');
+		carpetaMover.add(moverCamara, 'abajo').name('Abajo <i class="fa-solid fa-arrow-down"></i>');
+		carpetaMover.add(moverCamara, 'izquierda').name('Izquierda <i class="fa-solid fa-arrow-left"></i>');
+		carpetaMover.add(moverCamara, 'derecha').name('Derecha <i class="fa-solid fa-arrow-right"></i>');
+		
+		carpetaMover.open();
+
+		setTimeout(() => {
+			document.getElementsByClassName('title')[0].innerHTML = 'Controles del sistema';
+		}, 500);
+
+
+		document.addEventListener('mousedown', () => {
+			document.body.classList.add('grabbing');
+		});
+
+		document.addEventListener('mouseup', () => {
+			document.body.classList.remove('grabbing');
+		});
+
+		// Por si se suelta el clic fuera del navegador
+		document.addEventListener('mouseleave', () => {
+			document.body.classList.remove('grabbing');
+		});
+
+
+	</script>
+</body>
+
+</html>

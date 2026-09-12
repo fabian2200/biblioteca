@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Huesos de la mano</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<link type="text/css" rel="stylesheet" href="main.css">
+	<link href="../bootstrap/bootstrap.min.css" rel="stylesheet">
+	<!-- Bootstrap JS (requerido para modales) -->
+	<script src="../bootstrap/bootstrap.bundle.min.js"></script>
+	<link rel="stylesheet" href="../bootstrap/style.css" />
+	<link rel="stylesheet" href="../fontawesome/css/all.min.css">
+	<script src="../jquery-3.7.1.min.js"></script>
+	<link rel="stylesheet" href="./css/index.css">
+</head>
+
+<body>
+
+	<div id="labels-container"></div>
+
+	<!-- Controls display for spaceship view -->
+	<div id="spaceship-controls" class="controls-display">
+		<div class="controls-title">Controles de la Nave:</div>
+		<div class="controls-container">
+			<div class="control-item">
+				<span class="key-symbol">W</span> Adelante
+			</div>
+			<div class="control-item"><span class="key-symbol">S</span> Atrás</div>
+			<div class="control-item">
+				<span class="key-symbol">A</span> Izquierda
+			</div>
+			<div class="control-item">
+				<span class="key-symbol">D</span> Derecha
+			</div>
+			<div class="control-item"><span class="key-symbol">Q</span> Arriba</div>
+			<div class="control-item"><span class="key-symbol">E</span> Abajo</div>
+			<div class="control-item">
+				<span class="key-symbol">⬆️⬇️⬅️➡️</span> Rotar
+			</div>
+		</div>
+	</div>
+
+	<!-- Controls display for system view -->
+	<div id="system-controls" class="controls-display">
+		<div class="controls-title">Controles del Sistema:</div>
+		<div class="control-item">
+			<span class="key-symbol">🖱️</span> Click izquierdo + Arrastrar para rotar cámara
+		</div>
+		<div class="control-item">
+			<span class="key-symbol">🖱️</span> Click derecho + arrastrar para mover el Modelo
+		</div>
+	</div>
+
+	<!-- Modal de información del planeta -->
+	<div id="miModal" class="modal-flotante">
+		<div class="d-flex justify-content-end align-items-center gap-3" id="botones-modal">
+			<span id="boton-hablar" ><i class="fa-solid fa-volume-high"></i></span>
+			<span class="cerrar-modal" id="cerrar-modal"><i style="color: red; font-size: 40px;" class="fa-solid fa-xmark"></i></span>
+		</div>
+        <h3 id="modal-nombre-texto">Cargando...</h3>
+        <!-- Botones de las Pestañas -->
+        <div class="pestanas-container">
+            <button class="btn-pestana activa" onclick="cambiarPestana(event, 'tab-descripcion')">Descripción</button>
+        </div>
+    
+        <div id="tab-descripcion" class="contenido-pestana activa">
+            <p id="modal-descripcion-texto">Cargando...</p>
+        </div>
+    </div>
+
+	<div id="container"></div>
+
+	<div id="loading-container">
+		<div class="loading-container-content">
+			<div id="loading-text">Cargando modelo</div>
+			<div class="contenedor" style="position: relative;">
+				<span id="barra-text">0%</span>
+				<div id="barra" class="barra">
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="info" style="font-size: 18px; padding: 8px;">Sistema Muscular</div>
+
+
+	<script type="importmap">
+		{
+			"imports": {
+				"three": "../build/three.module.js",
+				"three/addons/": "./jsm/"
+			}
+		}
+	</script>
+
+	<script src="./js/index.js"></script>
+
+	<script type="module">
+
+		var partesSistemaMuscular = [
+			{
+				id: "Object_25086",
+				nombre: "Extensor corto del primer dedo",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_25",
+				nombre: "Extensor corto de los dedos",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_7008",
+				nombre: "Sóleo",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_7003",
+				nombre: "Gemelos",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_25079",
+				nombre: "Peróneo",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_25084",
+				nombre: "Tibial anterior",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_17025",
+				nombre: "Vasto interno",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_17011",
+				nombre: "Vasto externo",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_17002",
+				nombre: "Recto femoral",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_27",
+				nombre: "Iliposas",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_27028",
+				nombre: "Pectíneo",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_27005",
+				nombre: "Abductor largo",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_27007",
+				nombre: "Gracíl",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_17027",
+				nombre: "Sartorio",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_3001",
+				nombre: "Tensor de la fascia lata",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_3019",
+				nombre: "Gluteo medio",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_23",
+				nombre: "Recto del abdomen",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_3005",
+				nombre: "Gluteos",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_9005",
+				nombre: "Isquiotibial",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_9016",
+				nombre: "Semitendinoso",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_9007",
+				nombre: "Semimembranoso",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_5",
+				nombre: "Deltoides",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_33004",
+				nombre: "Biceps",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_33002",
+				nombre: "Tríceps",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_33018",
+				nombre: "Braquial",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_31068",
+				nombre: "Braquiorradial",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_31072",
+				nombre: "Extensor largo y corto del carpo",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_31005",
+				nombre: "Extensor común de los dedos",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_31003",
+				nombre: "Extensor cubital del carpo",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_31015",
+				nombre: "Extensor propio del meñique",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_31078",
+				nombre: "Pronador redondo",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_31036",
+				nombre: "Flexor radial del carpo",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_31039",
+				nombre: "Palmar largo",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_31084",
+				nombre: "Flexor cubital del carpo",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_23006",
+				nombre: "Oblicuo externo",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_23017",
+				nombre: "Pectoral mayor",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_19015",
+				nombre: "Esternocleidomastoideo",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_13001",
+				nombre: "Trapecio",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_19025",
+				nombre: "Esplenio",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_19028",
+				nombre: "Elevador de la escápula",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_19006",
+				nombre: "Escaleno anterior",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_19020",
+				nombre: "Escaleno medial",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_19029",
+				nombre: "Omohioideo inferior",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_19",
+				nombre: "Esternohioideo",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_19018",
+				nombre: "Digástrico",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_5007",
+				nombre: "Infraespinoso",
+				descripcion: "<p></p>"
+			},{
+				id: "Object_5014",
+				nombre: "Romboide",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_5004 ",
+				nombre: "Redoondo",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_13005",
+				nombre: "Dorsal ancho",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_15003",
+				nombre: "Orbicular del ojo",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_15021",
+				nombre: "Nasal",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_15",
+				nombre: "Frontal",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_15080",
+				nombre: "Orbicular de la boca",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_15002",
+				nombre: "Temporal",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_15064",
+				nombre: "Zigomático menor",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_15066",
+				nombre: "Zigomático mayor",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_15049",
+				nombre: "Elevador del labio superior y del ala de la nariz",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_15071",
+				nombre: "Mentoniano",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_15040",
+				nombre: "Masetero",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_15061",
+				nombre: "Elevador del labio superior",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_15010",
+				nombre: "Buccinador",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_15019",
+				nombre: "Depresor del ángulo de la boca",
+				descripcion: "<p></p>"
+			},
+			{
+				id: "Object_15015",
+				nombre: "Depresor del labio inferior",
+				descripcion: "<p></p>"
+			}
+		];
+
+
+		import * as THREE from 'three';
+		import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+		import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+		import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+		let scene, camera, renderer, controls;
+
+		// Inicializar escena
+		scene = new THREE.Scene();
+		scene.background = new THREE.Color(0x222222);
+
+		// Cámara
+		camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
+		camera.position.set(300, 150, 500);
+		camera.updateProjectionMatrix();
+
+		// Renderizador
+		renderer = new THREE.WebGLRenderer({ antialias: true });
+		renderer.setSize(window.innerWidth, window.innerHeight);
+		document.body.appendChild(renderer.domElement);
+
+		// Controles orbitales
+		controls = new OrbitControls(camera, renderer.domElement);
+		const distanciaInicial = camera.position.length();
+
+		controls.maxDistance = distanciaInicial;
+		controls.minDistance = 50;
+		// Luz
+		const light = new THREE.HemisphereLight(0xffffff, 0x444444, 4.0); // el tercer parámetro es la intensidad
+		light.position.set(-120, 120, 120);
+		scene.add(light);
+
+		// Cargar modelo GLB
+		const loader = new GLTFLoader();
+		const raycaster = new THREE.Raycaster();
+		const mouse = new THREE.Vector2();
+		const objetosClickeables = []; // Aquí guardarás los nodos (meshes)
+		let objetoSeleccionado = null;
+		let colorOriginal = null;
+
+
+		let modeloMuscular = null;
+		loader.load(
+			'models/mios/muscular.glb',
+			function (gltf) {
+				modeloMuscular = gltf.scene;
+				modeloMuscular.scale.set(8.5, 8.5, 8.5);
+				modeloMuscular.position.set(100, 50, 0);
+
+				modeloMuscular.rotation.y = 0;
+				modeloMuscular.rotation.x = 0;
+
+				scene.add(modeloMuscular);
+
+				// Calcular tamaño y centro
+				const box = new THREE.Box3().setFromObject(modeloMuscular);
+				const center = box.getCenter(new THREE.Vector3());
+				const size = box.getSize(new THREE.Vector3());
+
+				// Mover el modelo al centro de la escena
+				modeloMuscular.position.sub(center);
+
+				// Recalcular centro
+				const nuevoBox = new THREE.Box3().setFromObject(modeloMuscular);
+				const nuevoCentro = nuevoBox.getCenter(new THREE.Vector3());
+
+				// Centrar controles
+				controls.target.copy(nuevoCentro);
+
+				// Ajustar cámara
+				camera.position.set(
+					nuevoCentro.x,
+					nuevoCentro.y + 250,
+					size.z * 2
+				);
+
+				camera.lookAt(nuevoCentro);
+				controls.update();
+
+				modeloMuscular.traverse((child) => {
+					if (child.isMesh) {
+						child.material = child.material.clone();
+						child.materialOriginal = child.material.clone();
+						objetosClickeables.push(child);
+						console.log('Nodo encontrado:', child.name, child.type);
+					} 
+				});
+			},
+			function (xhr) {
+				document.getElementById('barra').style.width = (xhr.loaded / xhr.total * 100) + '%';
+				document.getElementById('barra-text').innerHTML = (xhr.loaded / xhr.total * 100).toFixed(2) + '%';	
+				if (xhr.loaded === xhr.total) {
+					setTimeout(() => {
+						document.getElementById('loading-container').style.display = 'none';
+					}, 2000);	
+				}
+			},
+			function (error) {
+				console.error('Error al cargar el modelo .glb', error);
+			}
+		);
+
+
+		window.addEventListener('click', (event) => {
+			// Si el clic fue dentro del modal, salir
+			if (event.target.closest('.modal-flotante')) {
+				return;
+			}
+
+			if (event.target.closest('.marcador-navegacion')) {
+				return;
+			}
+
+			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+			mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+			raycaster.setFromCamera(mouse, camera);
+
+			const intersects = raycaster.intersectObjects(objetosClickeables, true);
+
+			if (intersects.length > 0) {
+				const objeto = intersects[0].object;
+				const info = partesSistemaMuscular.find(parte => parte.id === objeto.name);
+
+				if (objetoSeleccionado){
+					objetoSeleccionado.material = objetoSeleccionado.materialOriginal.clone();
+				}
+
+				// Guardar el nuevo objeto seleccionado
+				objetoSeleccionado = objeto;
+				window.speechSynthesis.cancel();
+				// Guardar el color original solo si es un nuevo objeto
+				colorOriginal = objeto.materialOriginal.clone();
+				objeto.material.color.set(0xff0000);
+				posicionarModalEnPunto();
+				tooltip.style.display = 'none';
+			}
+		});
+
+		function posicionarModalEnPunto() {
+            if (!objetoSeleccionado) return;
+
+            const wp = new THREE.Vector3();
+
+            // Obtener posición global del objeto
+            objetoSeleccionado.getWorldPosition(wp);
+
+            // Convertir a coordenadas de pantalla
+            wp.project(camera);
+
+            const x = (wp.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-wp.y * 0.5 + 0.5) * window.innerHeight;
+
+            const modal = document.getElementById('miModal');
+
+            var info = null;
+			info = partesSistemaMuscular.find(parte => parte.id === objetoSeleccionado.name);
+
+			if(info){
+				modal.style.display = 'block';
+				modal.style.position = 'absolute';
+				modal.style.left = `${x}px`;
+				modal.style.top = `${y}px`;
+				document.getElementById('modal-nombre-texto').innerHTML = info.nombre;
+				document.getElementById('modal-descripcion-texto').innerHTML = info.descripcion;
+				document.getElementById('modal-funciones-texto').innerHTML = info.funciones;
+			}
+        }
+
+        function actualizarModal() {
+            if (!objetoSeleccionado) return;
+            // Posición mundial del objeto
+            const posicion = new THREE.Vector3();
+            objetoSeleccionado.getWorldPosition(posicion);
+
+            // Convertir a coordenadas de pantalla
+            posicion.project(camera);
+
+            const x = (posicion.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-posicion.y * 0.5 + 0.5) * window.innerHeight;
+
+            const modal = document.getElementById('miModal');
+            modal.style.left = `${x}px`;
+            modal.style.top = `${y}px`;
+        }
+
+        
+        let objetoHover = null;
+		var tooltip = null;
+		let materialOriginal = null;
+		window.addEventListener('mousemove', (event) => {
+			//verificar si el color es rojo
+			
+			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+			mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+			raycaster.setFromCamera(mouse, camera);
+
+			const intersects = raycaster.intersectObjects(
+				objetosClickeables,
+				true
+			);
+
+			if (!tooltip) {
+				tooltip = document.createElement('div');
+				tooltip.id = 'tooltip';
+				document.body.appendChild(tooltip);
+			}
+
+			if (intersects.length > 0) {
+				const objeto = intersects[0].object;
+				const info = partesSistemaMuscular.find(
+					parte => parte.id === objeto.name
+				);
+
+				// Si cambió de objeto
+				if (objetoHover !== objeto) {
+					// Restaurar color anterior
+					if (objetoHover && materialOriginal) {
+						if(objetoHover.material.color.getHex() != 0xff0000){
+							objetoHover.material.color.copy(materialOriginal);
+						}
+					}
+					// Guardar color original
+					objetoHover = objeto;
+					materialOriginal = objeto.material.color.clone();
+					// Aplicar gris
+					if(info){
+						objeto.material.color.set(0x5f5f5f);
+						tooltip.innerHTML = info?.nombre?.toUpperCase();
+					}				}
+
+				if(info){
+					tooltip.style.display = 'block';
+					tooltip.style.left = (event.clientX + 15) + 'px';
+					tooltip.style.top = (event.clientY + 15) + 'px';
+				}else{
+					tooltip.style.display = 'none';
+				}
+			} else {
+				// Restaurar último objeto
+				if (objetoHover && materialOriginal ) {
+					if(objetoHover.material.color.getHex() != 0xff0000){
+						objetoHover.material.color.copy(materialOriginal);
+					}
+				}
+				objetoHover = null;
+				materialOriginal = null;
+				tooltip.style.display = 'none';
+			}
+		});
+
+        $('#cerrar-modal').click(function() {
+			window.speechSynthesis.cancel();
+			document.getElementById('miModal').style.display = 'none';
+			if (objetoSeleccionado){
+				objetoSeleccionado.material = objetoSeleccionado.materialOriginal.clone();
+			}
+		});
+
+
+		// Animación
+		function animate() {
+			requestAnimationFrame(animate);
+			controls.update();
+			actualizarModal();
+			renderer.render(scene, camera);
+		}
+		animate();
+
+		// Resize responsive
+		window.addEventListener('resize', () => {
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+		});
+
+
+		const emularScroll = (factor) => {
+			const direccion = new THREE.Vector3();
+			direccion.subVectors(camera.position, controls.target).normalize(); // Dirección de la cámara
+
+			// Calcular nueva posición
+			const nuevaPosicion = camera.position.clone().addScaledVector(direccion, factor);
+
+			// Calcular la nueva distancia a target
+			const distancia = nuevaPosicion.distanceTo(controls.target);
+			console.log(distancia);
+
+			if (factor > 0) {
+				if (distancia < 737) {
+					camera.position.copy(nuevaPosicion);
+					controls.update();
+				}
+			} else {
+				if (distancia > 50) {
+					camera.position.copy(nuevaPosicion);
+					controls.update();
+				}
+			}
+		};
+
+
+		const controlesMovimiento = {
+			acercar: () => emularScroll(-50),
+			alejar: () => emularScroll(50),
+		};
+
+		const controlesRotacion = {
+			rotarX: () => { if (modeloMuscular) modeloMuscular.rotation.x += 0.1; },
+			rotarX_neg: () => { if (modeloMuscular) modeloMuscular.rotation.x -= 0.1; },
+			rotarY: () => { if (modeloMuscular) modeloMuscular.rotation.y += 0.1; },
+			rotarY_neg: () => { if (modeloMuscular) modeloMuscular.rotation.y -= 0.1; },
+		};
+
+		const moverCamara = {
+			arriba: () => { camera.position.y += 20; controls.target.y += 20; controls.update(); },
+			abajo: () => { camera.position.y -= 20; controls.target.y -= 20; controls.update(); },
+			izquierda: () => { camera.position.x -= 20; controls.target.x -= 20; controls.update(); },
+			derecha: () => { camera.position.x += 20; controls.target.x += 20; controls.update(); },
+			adelante: () => { camera.position.z -= 20; controls.target.z -= 20; controls.update(); },
+			atras: () => { camera.position.z += 20; controls.target.z += 20; controls.update(); },
+		};
+
+		const gui = new GUI();
+
+		const carpetaMovimiento = gui.addFolder('Mover cámara');
+		carpetaMovimiento.add(controlesMovimiento, 'acercar').name('Acercar <i class="fa-solid fa-plus"></i>');
+		carpetaMovimiento.add(controlesMovimiento, 'alejar').name('Alejar <i class="fa-solid fa-minus"></i>');
+
+		carpetaMovimiento.open();
+
+		const carpetaRotacion = gui.addFolder('Rotar modelo');
+
+		carpetaRotacion.add(controlesRotacion, 'rotarY').name('<i class="fa-solid fa-arrow-left"></i> Rotar');
+		carpetaRotacion.add(controlesRotacion, 'rotarY_neg').name('<i class="fa-solid fa-arrow-right"></i> Rotar');
+		carpetaRotacion.add(controlesRotacion, 'rotarX').name('<i class="fa-solid fa-arrow-up"></i> Rotar');
+		carpetaRotacion.add(controlesRotacion, 'rotarX_neg').name('<i class="fa-solid fa-arrow-down"></i> Rotar');
+
+		carpetaRotacion.open();
+
+		const carpetaMover = gui.addFolder('Mover cámara libre');
+		carpetaMover.add(moverCamara, 'arriba').name('Arriba <i class="fa-solid fa-arrow-up"></i>');
+		carpetaMover.add(moverCamara, 'abajo').name('Abajo <i class="fa-solid fa-arrow-down"></i>');
+		carpetaMover.add(moverCamara, 'izquierda').name('Izquierda <i class="fa-solid fa-arrow-left"></i>');
+		carpetaMover.add(moverCamara, 'derecha').name('Derecha <i class="fa-solid fa-arrow-right"></i>');
+		
+		carpetaMover.open();
+
+		setTimeout(() => {
+			document.getElementsByClassName('title')[0].innerHTML = 'Controles del sistema';
+		}, 500);
+
+
+		document.addEventListener('mousedown', () => {
+			document.body.classList.add('grabbing');
+		});
+
+		document.addEventListener('mouseup', () => {
+			document.body.classList.remove('grabbing');
+		});
+
+		// Por si se suelta el clic fuera del navegador
+		document.addEventListener('mouseleave', () => {
+			document.body.classList.remove('grabbing');
+		});
+
+
+	</script>
+</body>
+
+</html>

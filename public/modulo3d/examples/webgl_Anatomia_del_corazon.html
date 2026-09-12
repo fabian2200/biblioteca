@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Anatomía del corazón</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<link type="text/css" rel="stylesheet" href="main.css">
+	<link href="../bootstrap/bootstrap.min.css" rel="stylesheet">
+	<!-- Bootstrap JS (requerido para modales) -->
+	<script src="../bootstrap/bootstrap.bundle.min.js"></script>
+	<link rel="stylesheet" href="../bootstrap/style.css" />
+	<link rel="stylesheet" href="../fontawesome/css/all.min.css">
+	<script src="../jquery-3.7.1.min.js"></script>
+	<link rel="stylesheet" href="css/index.css">
+</head>
+
+<body>
+
+    <div id="miModal" class="modal-flotante">
+		<div class="d-flex justify-content-end align-items-center gap-3" id="botones-modal">
+			<span id="boton-hablar" ><i class="fa-solid fa-volume-high"></i></span>
+			<span class="cerrar-modal" onclick="cerrarModal()"><i style="color: red; font-size: 40px;" class="fa-solid fa-xmark"></i></span>
+		</div>
+        <h3 id="modal-nombre-texto">Cargando...</h3>
+        <!-- Botones de las Pestañas -->
+        <div class="pestanas-container">
+            <button class="btn-pestana activa" onclick="cambiarPestana(event, 'tab-descripcion')">Descripción</button>
+            <button class="btn-pestana" onclick="cambiarPestana(event, 'tab-funciones')">Funciones</button>
+        </div>
+    
+        <!-- Contenido de las Pestañas -->
+        <div id="tab-descripcion" class="contenido-pestana activa">
+            <p id="modal-descripcion-texto">Cargando...</p>
+        </div>
+        <div id="tab-funciones" class="contenido-pestana">
+            <p id="modal-funciones-texto">Cargando...</p>
+        </div>
+    </div>
+
+    
+
+	<div id="labels-container"></div>
+
+	<!-- Controls display for spaceship view -->
+	<div id="spaceship-controls" class="controls-display">
+		<div class="controls-title">Controles de la Nave:</div>
+		<div class="controls-container">
+			<div class="control-item">
+				<span class="key-symbol">W</span> Adelante
+			</div>
+			<div class="control-item"><span class="key-symbol">S</span> Atrás</div>
+			<div class="control-item">
+				<span class="key-symbol">A</span> Izquierda
+			</div>
+			<div class="control-item">
+				<span class="key-symbol">D</span> Derecha
+			</div>
+			<div class="control-item"><span class="key-symbol">Q</span> Arriba</div>
+			<div class="control-item"><span class="key-symbol">E</span> Abajo</div>
+			<div class="control-item">
+				<span class="key-symbol">⬆️⬇️⬅️➡️</span> Rotar
+			</div>
+		</div>
+	</div>
+
+	<!-- Controls display for system view -->
+	<div id="system-controls" class="controls-display">
+		<div class="controls-title">Controles del Sistema:</div>
+		<div class="control-item">
+			<span class="key-symbol">🖱️</span> Click izquierdo + Arrastrar para rotar cámara
+		</div>
+		<div class="control-item">
+			<span class="key-symbol">🖱️</span> Click derecho + arrastrar para mover el Modelo
+		</div>
+	</div>
+
+	<!-- Modal de información del planeta -->
+	<div class="modal fade" style="z-index: 100000000000000000;" id="celulaModal" tabindex="-1"
+		aria-labelledby="celulaModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg modal-dialog-centered">
+			<div class="modal-content">
+				<button type="button" style="z-index: 100000000;" id="celulaModalClose2" data-bs-dismiss="modal"
+					aria-label="Cerrar"> x </button>
+				<div class="modal-body">
+					<h4 class="modal-subtitle" style="text-align: center; text-transform: uppercase; color: #ffffff;">NOMBRE: <span style="color: #ff7e00;" id="modalName"></span></h4>
+					<div id="modalDescription"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="container"></div>
+
+	<div id="loading-container">
+		<div class="loading-container-content">
+			<div id="loading-text">Cargando modelo</div>
+			<div class="contenedor" style="position: relative;">
+				<span id="barra-text">0%</span>
+				<div id="barra" class="barra">
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="info" style="font-size: 18px; padding: 8px;">Anatomía del corazón</div>
+
+    <script src="./jsm/gsap.min.js"></script>
+	<script src="./js/index.js"></script>
+    
+
+	<script type="importmap">
+        {
+            "imports": {
+                "three": "../build/three.module.js",
+                "three/addons/": "./jsm/"
+            }
+        }
+    </script>
+
+	<script type="module">
+
+		var partesSistemaFemenino = [
+            {
+				id: "Empty",
+				nombre: "Aorta",
+				descripcion: "<p></p>",
+                funciones: ""
+			},
+			{
+				id: "Empty001",
+				nombre: "Tronco Pulmonar",
+				descripcion: "<p></p>",
+                funciones: ""
+			},
+			{
+				id: "Empty002",
+				nombre: "Vena Cava Superior",
+				descripcion: "<p></p>",
+                funciones: ""
+			},
+            {
+				id: "Empty003",
+				nombre: "Vena Cava Inferior",
+				descripcion: "<p></p>",
+                funciones: ""
+			},
+            {
+				id: "Empty004",
+				nombre: "Aurícula Derecha",
+				descripcion: "<p></p>",
+                funciones: ""
+			},
+			{
+				id: "Empty005",
+				nombre: "Ventrículo Derecho",
+				descripcion: "<p></p>",
+                funciones: ""
+			},
+            {
+				id: "Empty006",
+				nombre: "Ventrículo Izquierdo",
+				descripcion: "<p></p>",
+                funciones: ""
+			},
+            {
+				id: "Empty007",
+				nombre: "Aurícula Izquierda",
+				descripcion: "<p></p>",
+                funciones: ""
+			},
+			{
+				id: "Empty008",
+				nombre: "Válvula Tricúspide",
+				descripcion: "<p></p>",
+                funciones: ""
+			},
+            {
+				id: "Empty009",
+				nombre: "Cuerdas Tendinosas",
+				descripcion: "<p></p>",
+                funciones: ""
+			},
+            {
+				id: "Empty010",
+				nombre: "Músculo Papilar",
+				descripcion: "<p></p>",
+                funciones: ""
+			},
+            {
+				id: "Empty011",
+				nombre: "Banda Moderadora",
+				descripcion: "<p></p>",
+                funciones: ""
+			},
+            {
+				id: "Empty012",
+				nombre: "Válvula Pulmonar",
+				descripcion: "<p></p>",
+                funciones: ""
+			},
+            {
+				id: "Empty013",
+				nombre: "Válvula Mitral (bicúspide)",
+				descripcion: "<p></p>",
+                funciones: ""
+			},
+            {
+				id: "Empty014",
+				nombre: "Cuerdas Tendinosas",
+				descripcion: "<p></p>",
+                funciones: ""
+			},
+            {
+				id: "Empty015",
+				nombre: "Músculo Papilar",
+				descripcion: "<p></p>",
+                funciones: ""
+			},
+            {
+				id: "Empty016",
+				nombre: "Válvula Pulmonar",
+				descripcion: "<p></p>",
+                funciones: ""
+			}
+		];
+
+
+		import * as THREE from 'three';
+		import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+		import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+		import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+
+		let scene, camera, renderer, controls;
+
+
+		// Inicializar escena
+		scene = new THREE.Scene();
+		scene.background = new THREE.Color(0x222222);
+		
+		// Cámara
+		camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.01, 5000);
+		camera.position.set(400, 250, 450);
+		camera.updateProjectionMatrix();
+
+
+		// Renderizador
+		renderer = new THREE.WebGLRenderer({ antialias: true });
+		renderer.setSize(window.innerWidth, window.innerHeight);
+		document.body.appendChild(renderer.domElement);
+
+		// Controles orbitales
+		controls = new OrbitControls(camera, renderer.domElement);
+		const distanciaInicial = camera.position.length();
+
+		controls.maxDistance = distanciaInicial;
+		controls.minDistance = 50;
+		// Luz
+		const ambientLight = new THREE.AmbientLight(0xffffff, 2);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 3);
+        directionalLight.position.set(10, 10, 10);
+        scene.add(directionalLight);
+
+		// Cargar modelo GLB
+		const loader = new GLTFLoader();
+		const raycaster = new THREE.Raycaster();
+		const mouse = new THREE.Vector2();
+		let hotspots = [];
+		let marcadoresSprites = [];
+		const centroModelo = new THREE.Vector3();
+		const vectorHaciaPunto = new THREE.Vector3();
+		const vectorHaciaCamara = new THREE.Vector3();
+		const posMundoMarcador = new THREE.Vector3();
+
+		let modeloCorazon = null;
+		loader.load(
+            'models/mios/corazon.glb',
+
+            function (gltf) {
+
+                modeloCorazon = gltf.scene;
+				modeloCorazon.scale.set(35.5, 35.5, 35.5);
+
+                // Agregar temporalmente a la escena para calcular dimensiones
+                scene.add(modeloCorazon);
+
+                // Calcular caja envolvente
+                const box = new THREE.Box3().setFromObject(modeloCorazon);
+
+                // Centro real del modelo
+                const center = box.getCenter(new THREE.Vector3());
+
+                // Tamaño del modelo
+                const size = box.getSize(new THREE.Vector3());
+
+                // Centrar modelo en el origen
+                modeloCorazon.position.x -= center.x;
+                modeloCorazon.position.y -= center.y;
+                modeloCorazon.position.z -= center.z;
+
+                // Rotación inicial
+                modeloCorazon.rotation.x = 0;
+                modeloCorazon.rotation.y = 0;
+                modeloCorazon.rotation.z = 0.02;
+
+
+                // Recalcular después de mover
+                const box2 = new THREE.Box3().setFromObject(modeloCorazon);
+                const center2 = box2.getCenter(new THREE.Vector3());
+
+                // OrbitControls girará alrededor del modelo
+                controls.target.copy(center2);
+				centroModelo.copy(center2);
+
+                // Distancia adecuada de cámara
+                const maxDim = Math.max(size.x, size.y, size.z);
+
+                camera.position.set(
+                    center2.x + maxDim * 0,
+                    center2.y + maxDim * 0.2,
+                    center2.z + maxDim * 1.0
+                );
+
+                camera.lookAt(center2);
+
+                controls.minDistance = maxDim * 0.5;
+                controls.maxDistance = maxDim * 5;
+
+                controls.update();
+
+                modeloCorazon.updateMatrixWorld(true);
+
+                modeloCorazon.traverse((child) => {
+                    if (child.name.startsWith("Empty")) {
+
+                        const posicion = child.getWorldPosition(
+                            new THREE.Vector3()
+                        );
+
+                        const distanciaHotspot = maxDim * 0.2;
+						
+                        hotspots.push({
+                            id: child.name,
+                            nombre: partesSistemaFemenino.find(punto => punto.id === child.name).nombre,
+                            nodoEmpty: child,
+                            marcadorPos: posicion.clone(),
+                            camaraPos: new THREE.Vector3(
+                                posicion.x + distanciaHotspot,
+                                posicion.y + distanciaHotspot,
+                                posicion.z + distanciaHotspot
+                            ),
+                            targetPos: posicion.clone()
+                        });
+                    }
+                });
+
+                crearMarcadoresVisuales();
+            },
+
+            function (xhr) {
+                if (xhr.total) {
+                    const porcentaje = (xhr.loaded / xhr.total) * 100;
+                    document.getElementById('barra').style.width =  porcentaje + '%';
+                    document.getElementById('barra-text').innerHTML = porcentaje.toFixed(2) + '%';
+
+                    if (xhr.loaded >= xhr.total) {
+                        setTimeout(() => {
+
+                            document.getElementById(
+                                'loading-container'
+                            ).style.display = 'none';
+
+                        }, 500);
+                    }
+                }
+            },
+
+            function (error) {
+                console.error(
+                    'Error al cargar el modelo .glb',
+                    error
+                );
+            }
+        );
+
+        function crearTexturaMarcador(numero) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 64;
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+
+            ctx.beginPath();
+            ctx.arc(32, 32, 28, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+            ctx.fill();
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#ffffff';
+            ctx.stroke();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 28px Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(String(numero), 32, 33);
+
+            const textura = new THREE.CanvasTexture(canvas);
+            textura.colorSpace = THREE.SRGBColorSpace;
+            return textura;
+        }
+
+        function crearMarcadoresVisuales() {
+            let contador = 1;
+            hotspots.forEach((punto, index) => {
+                const material = new THREE.SpriteMaterial({
+                    map: crearTexturaMarcador(contador),
+                    depthTest: true,
+                    depthWrite: false,
+                    transparent: true
+                });
+
+                const sprite = new THREE.Sprite(material);
+                sprite.userData.hotspotIndex = index;
+                sprite.renderOrder = 1;
+
+                punto.nodoEmpty.add(sprite);
+                marcadoresSprites.push(sprite);
+                contador++;
+            });
+        }
+
+        function actualizarEscalaMarcadores() {
+            marcadoresSprites.forEach((sprite) => {
+                sprite.getWorldPosition(posMundoMarcador);
+                const distancia = camera.position.distanceTo(posMundoMarcador);
+                const escala = distancia * 0.0014;
+                sprite.scale.set(escala, escala, 1);
+            });
+        }
+
+        function estaDetrasDelModelo(posicion) {
+            vectorHaciaPunto.subVectors(posicion, centroModelo);
+            vectorHaciaCamara.subVectors(camera.position, centroModelo);
+            return vectorHaciaPunto.dot(vectorHaciaCamara) < 0;
+        }
+
+        let puntoActual3D = null; // Guardará el vector 3D del hotspot activo
+
+        function irAlPunto(index) {
+            if (index < 0 || index >= hotspots.length) return;
+            
+            const puntoDestino = hotspots[index];
+            controls.enabled = false;
+            cerrarModal(); // Cerramos cualquier modal abierto previo
+          
+			controls.enabled = true; 
+			
+			var informacion = partesSistemaFemenino.find(punto => punto.id === puntoDestino.id);
+			
+			if (informacion) {
+				// Guardamos la posición del target o la posición del objeto 3D real
+				// Si tienes una propiedad puntoDestino.posicion usa esa, si no, usamos targetPos
+				puntoActual3D = new THREE.Vector3(
+					puntoDestino.targetPos.x, 
+					puntoDestino.targetPos.y, 
+					puntoDestino.targetPos.z
+				);
+
+				abrirModal(informacion.nombre, informacion.descripcion, informacion.funciones);
+				posicionarModalEnPunto(); // Posición inicial
+			}
+                
+        }
+
+        function posicionarModalEnPunto() {
+            if (!puntoActual3D) return;
+
+            const wp = puntoActual3D.clone();
+            
+            wp.project(camera);
+
+            const x = (wp.x * .5 + .5) * window.innerWidth;
+            const y = (-(wp.y * .5) + .5) * window.innerHeight;
+
+            const modal = document.getElementById('miModal');
+            modal.style.left = `${x}px`;
+            modal.style.top = `${y}px`;
+            modal.style.opacity = estaDetrasDelModelo(puntoActual3D) ? '0.25' : '1';
+        }
+
+        let tooltipMarcador = null;
+        let marcadorHoverIndex = null;
+
+        function crearTooltipMarcador() {
+            if (!tooltipMarcador) {
+                tooltipMarcador = document.createElement('div');
+                tooltipMarcador.id = 'tooltip';
+                document.body.appendChild(tooltipMarcador);
+            }
+        }
+
+        function posicionarTooltipSobreMarcador(posicion3D) {
+            if (!tooltipMarcador) return;
+
+            const wp = posicion3D.clone();
+            wp.project(camera);
+
+            const x = (wp.x * .5 + .5) * window.innerWidth;
+            const y = (-(wp.y * .5) + .5) * window.innerHeight;
+
+            tooltipMarcador.style.left = `${x}px`;
+            tooltipMarcador.style.top = `${y}px`;
+            tooltipMarcador.style.transform = 'translate(-50%, calc(-100% - 12px))';
+            tooltipMarcador.style.opacity = estaDetrasDelModelo(posicion3D) ? '0.3' : '1';
+        }
+
+        function mostrarTooltipMarcador(index) {
+            const hotspot = hotspots[index];
+            const info = partesSistemaFemenino.find(p => p.id === hotspot.id);
+            const nombre = info?.nombre || hotspot.nombre;
+
+            if (!nombre) {
+                ocultarTooltipMarcador();
+                return;
+            }
+
+            crearTooltipMarcador();
+            tooltipMarcador.innerHTML = nombre;
+            tooltipMarcador.style.display = 'block';
+            marcadorHoverIndex = index;
+            posicionarTooltipSobreMarcador(hotspot.targetPos);
+            renderer.domElement.style.cursor = 'pointer';
+        }
+
+        function ocultarTooltipMarcador() {
+            if (tooltipMarcador) tooltipMarcador.style.display = 'none';
+            marcadorHoverIndex = null;
+            renderer.domElement.style.cursor = '';
+        }
+
+        function actualizarTooltipMarcador() {
+            if (marcadorHoverIndex !== null) {
+                posicionarTooltipSobreMarcador(hotspots[marcadorHoverIndex].targetPos);
+            }
+        }
+
+        function actualizarInterfaz() {
+            if (document.getElementById('miModal').style.display === 'block') {
+                posicionarModalEnPunto();
+            }
+            actualizarTooltipMarcador();
+        }
+     
+        function abrirModal(nombre, descripcion, funciones) {
+            document.getElementById('modal-nombre-texto').innerHTML = nombre || 'Sin nombre';
+            document.getElementById('modal-descripcion-texto').innerHTML = descripcion || 'Sin descripción';
+            document.getElementById('modal-funciones-texto').innerHTML = funciones || 'Sin funciones';
+            document.getElementById('miModal').style.display = 'block';
+        }
+
+		function animate() {
+			requestAnimationFrame(animate);
+			controls.update();
+			actualizarEscalaMarcadores();
+			renderer.render(scene, camera);
+            actualizarInterfaz();
+		}
+
+		animate();
+
+		function actualizarMouseDesdeEvento(event) {
+			const rect = renderer.domElement.getBoundingClientRect();
+			mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+			mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+		}
+
+		renderer.domElement.addEventListener('mousemove', (event) => {
+			if (!marcadoresSprites.length) return;
+
+			actualizarMouseDesdeEvento(event);
+			raycaster.setFromCamera(mouse, camera);
+			const intersecciones = raycaster.intersectObjects(marcadoresSprites, false);
+
+			if (intersecciones.length > 0) {
+				const index = intersecciones[0].object.userData.hotspotIndex;
+				if (marcadorHoverIndex !== index) {
+					mostrarTooltipMarcador(index);
+				}
+			} else {
+				ocultarTooltipMarcador();
+			}
+		});
+
+		renderer.domElement.addEventListener('mouseleave', () => {
+			ocultarTooltipMarcador();
+		});
+
+		renderer.domElement.addEventListener('click', (event) => {
+			if (!marcadoresSprites.length) return;
+
+			actualizarMouseDesdeEvento(event);
+			raycaster.setFromCamera(mouse, camera);
+			const intersecciones = raycaster.intersectObjects(marcadoresSprites, false);
+
+			if (intersecciones.length > 0) {
+				ocultarTooltipMarcador();
+				irAlPunto(intersecciones[0].object.userData.hotspotIndex);
+			}
+		});
+
+		// Resize responsive
+		window.addEventListener('resize', () => {
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+		});
+
+
+		const emularScroll = (factor) => {
+			const direccion = new THREE.Vector3();
+			direccion.subVectors(camera.position, controls.target).normalize(); // Dirección de la cámara
+
+			// Calcular nueva posición
+			const nuevaPosicion = camera.position.clone().addScaledVector(direccion, factor);
+
+			// Calcular la nueva distancia a target
+			const distancia = nuevaPosicion.distanceTo(controls.target);
+			console.log(distancia);
+
+			if (factor > 0) {
+				if (distancia < 737) {
+					camera.position.copy(nuevaPosicion);
+					controls.update();
+				}
+			} else {
+				if (distancia > 50) {
+					camera.position.copy(nuevaPosicion);
+					controls.update();
+				}
+			}
+		};
+
+
+		const controlesMovimiento = {
+			acercar: () => emularScroll(-50),
+			alejar: () => emularScroll(50),
+		};
+
+		const controlesRotacion = {
+			rotarX: () => { if (modeloCorazon) modeloCorazon.rotation.x += 0.1; },
+			rotarX_neg: () => { if (modeloCorazon) modeloCorazon.rotation.x -= 0.1; },
+			rotarY: () => { if (modeloCorazon) modeloCorazon.rotation.y += 0.1; },
+			rotarY_neg: () => { if (modeloCorazon) modeloCorazon.rotation.y -= 0.1; },
+		};
+
+		const moverCamara = {
+			arriba: () => { camera.position.y += 20; controls.target.y += 20; controls.update(); },
+			abajo: () => { camera.position.y -= 20; controls.target.y -= 20; controls.update(); },
+			izquierda: () => { camera.position.x -= 20; controls.target.x -= 20; controls.update(); },
+			derecha: () => { camera.position.x += 20; controls.target.x += 20; controls.update(); },
+			adelante: () => { camera.position.z -= 20; controls.target.z -= 20; controls.update(); },
+			atras: () => { camera.position.z += 20; controls.target.z += 20; controls.update(); },
+		};
+
+		const gui = new GUI();
+
+		const carpetaMovimiento = gui.addFolder('Mover cámara');
+		carpetaMovimiento.add(controlesMovimiento, 'acercar').name('Acercar <i class="fa-solid fa-plus"></i>');
+		carpetaMovimiento.add(controlesMovimiento, 'alejar').name('Alejar <i class="fa-solid fa-minus"></i>');
+
+		carpetaMovimiento.open();
+
+		const carpetaRotacion = gui.addFolder('Rotar modelo');
+
+		carpetaRotacion.add(controlesRotacion, 'rotarY').name('<i class="fa-solid fa-arrow-left"></i> Rotar');
+		carpetaRotacion.add(controlesRotacion, 'rotarY_neg').name('<i class="fa-solid fa-arrow-right"></i> Rotar');
+		carpetaRotacion.add(controlesRotacion, 'rotarX').name('<i class="fa-solid fa-arrow-up"></i> Rotar');
+		carpetaRotacion.add(controlesRotacion, 'rotarX_neg').name('<i class="fa-solid fa-arrow-down"></i> Rotar');
+
+		carpetaRotacion.open();
+
+		const carpetaMover = gui.addFolder('Mover cámara libre');
+		carpetaMover.add(moverCamara, 'arriba').name('Arriba <i class="fa-solid fa-arrow-up"></i>');
+		carpetaMover.add(moverCamara, 'abajo').name('Abajo <i class="fa-solid fa-arrow-down"></i>');
+		carpetaMover.add(moverCamara, 'izquierda').name('Izquierda <i class="fa-solid fa-arrow-left"></i>');
+		carpetaMover.add(moverCamara, 'derecha').name('Derecha <i class="fa-solid fa-arrow-right"></i>');
+		
+		carpetaMover.open();
+
+		setTimeout(() => {
+			document.getElementsByClassName('title')[0].innerHTML = 'Controles del sistema';
+		}, 500);
+
+
+		document.addEventListener('mousedown', () => {
+			document.body.classList.add('grabbing');
+		});
+
+		document.addEventListener('mouseup', () => {
+			document.body.classList.remove('grabbing');
+		});
+
+		// Por si se suelta el clic fuera del navegador
+		document.addEventListener('mouseleave', () => {
+			document.body.classList.remove('grabbing');
+		});
+
+
+	</script>
+</body>
+
+</html>

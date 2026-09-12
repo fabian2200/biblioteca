@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Huesos del pie</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<link type="text/css" rel="stylesheet" href="main.css">
+	<link href="../bootstrap/bootstrap.min.css" rel="stylesheet">
+	<!-- Bootstrap JS (requerido para modales) -->
+	<script src="../bootstrap/bootstrap.bundle.min.js"></script>
+	<link rel="stylesheet" href="../bootstrap/style.css" />
+	<link rel="stylesheet" href="../fontawesome/css/all.min.css">
+	<script src="../jquery-3.7.1.min.js"></script>
+	<link rel="stylesheet" href="./css/index.css">
+</head>
+
+<body>
+
+	<div id="labels-container"></div>
+
+	<!-- Controls display for spaceship view -->
+	<div id="spaceship-controls" class="controls-display">
+		<div class="controls-title">Controles de la Nave:</div>
+		<div class="controls-container">
+			<div class="control-item">
+				<span class="key-symbol">W</span> Adelante
+			</div>
+			<div class="control-item"><span class="key-symbol">S</span> Atrás</div>
+			<div class="control-item">
+				<span class="key-symbol">A</span> Izquierda
+			</div>
+			<div class="control-item">
+				<span class="key-symbol">D</span> Derecha
+			</div>
+			<div class="control-item"><span class="key-symbol">Q</span> Arriba</div>
+			<div class="control-item"><span class="key-symbol">E</span> Abajo</div>
+			<div class="control-item">
+				<span class="key-symbol">⬆️⬇️⬅️➡️</span> Rotar
+			</div>
+		</div>
+	</div>
+
+	<!-- Controls display for system view -->
+	<div id="system-controls" class="controls-display">
+		<div class="controls-title">Controles del Sistema:</div>
+		<div class="control-item">
+			<span class="key-symbol">🖱️</span> Click izquierdo + Arrastrar para rotar cámara
+		</div>
+		<div class="control-item">
+			<span class="key-symbol">🖱️</span> Click derecho + arrastrar para mover el Modelo
+		</div>
+	</div>
+
+	<!-- Modal de información del planeta -->
+	<div id="miModal" class="modal-flotante">
+		<div class="d-flex justify-content-end align-items-center gap-3" id="botones-modal">
+			<span id="boton-hablar" ><i class="fa-solid fa-volume-high"></i></span>
+			<span class="cerrar-modal" id="cerrar-modal"><i style="color: red; font-size: 40px;" class="fa-solid fa-xmark"></i></span>
+		</div>
+        <h3 id="modal-nombre-texto">Cargando...</h3>
+        <!-- Botones de las Pestañas -->
+        <div class="pestanas-container">
+            <button class="btn-pestana activa" onclick="cambiarPestana(event, 'tab-descripcion')">Descripción</button>
+            <button class="btn-pestana" onclick="cambiarPestana(event, 'tab-funciones')">Funciones</button>
+        </div>
+    
+        <div id="tab-descripcion" class="contenido-pestana activa">
+            <p id="modal-descripcion-texto">Cargando...</p>
+        </div>
+        <div id="tab-funciones" class="contenido-pestana">
+            <p id="modal-funciones-texto">Cargando...</p>
+        </div>
+    </div>
+
+	<div id="container"></div>
+
+	<div id="loading-container">
+		<div class="loading-container-content">
+			<div id="loading-text">Cargando modelo</div>
+			<div class="contenedor" style="position: relative;">
+				<span id="barra-text">0%</span>
+				<div id="barra" class="barra">
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="info" style="font-size: 18px; padding: 8px;">Huesos del pie</div>
+
+
+	<script type="importmap">
+		{
+			"imports": {
+				"three": "../build/three.module.js",
+				"three/addons/": "./jsm/"
+			}
+		}
+	</script>
+
+	<script src="./js/index.js"></script>
+
+	<script type="module">
+		var partesHuesosPie = [
+			{
+				id: "Skeletal_Esqueleto_0012",
+				nombre: "Hueso Calcáneo",
+				descripcion: "<p>El calcáneo, también conocido como el hueso del talón, es el hueso más grande del pie y se encuentra en la parte posterior e inferior del mismo. Actúa como un soporte de peso crucial y está involucrado en la absorción de impactos durante el movimiento. Además, es la estructura de inserción de músculos y tendones importantes para la bipedestación y la marcha. </p>"
+			},
+            {
+				id: "Skeletal_Esqueleto_0059",
+				nombre: "Hueso Astrágalo",
+				descripcion: "<p>El hueso astrágalo, también llamado tálus, es un hueso clave en el pie y el tobillo. Se encuentra en la parte superior del pie, articulando con la tibia y el peroné, formando la articulación del tobillo, y también con el calcáneo y el escafoides. Su función principal es transmitir el peso del cuerpo desde la pierna al pie, permitiendo la movilidad y estabilidad del tobillo. </p>"
+			},
+            {
+				id: "Skeletal_Esqueleto_0001",
+				nombre: "Hueso Cuboides",
+				descripcion: "<p>El hueso cuboides es un hueso corto y cúbico localizado en la parte lateral del pie, específicamente en la fila distal del tarso. Se articula con el calcáneo (posteriormente), los huesos cuneiformes lateral y navicular (medialmente) y los huesos metatarsianos cuarto y quinto (anteriormente). Su función principal es proporcionar estabilidad y soporte al arco lateral del pie, además de participar en la absorción de fuerzas durante la marcha. </p>"
+			},
+            {
+				id: "Skeletal_Esqueleto_0044",
+				nombre: "Hueso Escafoides",
+				descripcion: "<p>El escafoides tarsiano, también llamado hueso navicular, es un hueso del pie ubicado en la segunda fila del tarso, entre el astrágalo y los cuneiformes. Este hueso es crucial para la biomecánica del pie, participando en movimientos como la flexión dorsal y plantar del tobillo, así como en la estabilidad y equilibrio. </p>"
+			},
+            {
+				id: "Skeletal_Esqueleto_0041",
+				nombre: "Huesos Cuneiformes",
+				descripcion: "<p>Los huesos cuneiformes del pie son tres pequeños huesos en forma de cuña ubicados en la parte media del pie, entre el hueso navicular y los huesos metatarsianos. Se les llama cuneiforme medial, intermedio y lateral. Estos huesos son importantes para la estructura y función del arco del pie, así como para la locomoción y el equilibrio, los huesos que componen este grupo son:<br><br><strong>Cuneiforme medial (primero):</strong><br>Se encuentra en la parte interna (medial) del pie, articulándose con el navicular por detrás y con el primer metatarsiano por delante</p>"
+			},
+            {
+				id: "Skeletal_Esqueleto_0010",
+				nombre: "Huesos del Metatarso",
+				descripcion: "<p>Los metatarsianos son un grupo de cinco huesos largos  ubicados en el metatarso del pie , entre los huesos del tarso (cerca del tobillo ) y las falanges (huesos de los dedos).<br><br> Estos huesos se numeran del uno al cinco, comenzando por el primer metatarsiano, debajo del dedo gordo, y avanzando lateralmente hacia el quinto metatarsiano, debajo del dedo meñique. Cada metatarsiano tiene tres partes distintas: una <strong>base proximal</strong> que se articula con los huesos del tarso , una <strong>diáfisis</strong> delgada en el centro y una <strong>cabeza distal</strong> que se conecta con las falanges proximales de los dedos .</p>"
+			},
+            {
+				id: "Skeletal_Esqueleto_0033",
+				nombre: "Falanges proximales",
+				descripcion: "<p>Las falanges proximales del pie son los huesos ubicados en la base de los dedos, justo después de los metatarsianos. Cada dedo, excepto el dedo gordo, tiene tres falanges: proximal, media y distal. El dedo gordo solo tiene dos: proximal y distal. Las falanges proximales se articulan con los metatarsianos en las articulaciones metatarsofalángicas, que son las que forman la 'bola' del pie. <br><br> <strong>Anatomía de las falanges proximales</strong><br><strong>Base:</strong><br>La parte proximal de la falange proximal se articula con el hueso metatarsiano correspondiente. <br><br><strong>Cuerpo:</strong><br>Es la parte alargada del hueso, con una superficie dorsal convexa y una superficie plantar cóncava. <br><br><strong>Cabeza:</strong><br>La parte distal se articula con la falange media (o distal en el caso del dedo gordo). </p>"
+			},
+            {
+				id: "Skeletal_Esqueleto_0014",
+				nombre: "Falanges Intermedias",
+				descripcion: "<p>Las falanges intermedias del pie, también llamadas falanges medias, son los huesos ubicados entre</p>"
+			},
+            {
+				id: "Skeletal_Esqueleto_0020",
+				nombre: "Falanges Distales",
+				descripcion: "<p>Las falanges distales del pie son los huesos más pequeños y terminales de cada dedo del pie, excluyendo el dedo gordo, que solo tiene dos falanges: una proximal y una distal. Estos huesos se articulan con las falanges medias (excepto en el dedo gordo) y tienen una forma aplanada, con una base ancha para la articulación y una cabeza ensanchada que soporta la uña y la almohadilla del dedo. <br><br> <strong>Ubicación:</strong><br>Se encuentran en la punta de cada dedo del pie, formando la parte más distal de la estructura ósea. <br><br><strong>Forma:</strong><br>Son más aplanadas y pequeñas que las falanges distales de la mano. <br><br><strong>Articulaciones:</strong><br>Se articulan con las falanges medias (o falange proximal en el caso del dedo gordo). <br><br><strong>Extremidad distal:</strong><br>La cabeza de la falange distal presenta una superficie rugosa y elevada, llamada tuberosidad, que ayuda a soportar la uña y la almohadilla del dedo. </p>"
+			}
+		];
+
+
+		import * as THREE from 'three';
+		import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+		import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+		import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+		let scene, camera, renderer, controls;
+
+		// Inicializar escena
+		scene = new THREE.Scene();
+		scene.background = new THREE.Color(0x222222);
+
+		// Cámara
+		camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
+		camera.position.set(300, 150, 500);
+		camera.updateProjectionMatrix();
+
+		// Renderizador
+		renderer = new THREE.WebGLRenderer({ antialias: true });
+		renderer.setSize(window.innerWidth, window.innerHeight);
+		document.body.appendChild(renderer.domElement);
+
+		// Controles orbitales
+		controls = new OrbitControls(camera, renderer.domElement);
+		const distanciaInicial = camera.position.length();
+
+		controls.maxDistance = distanciaInicial;
+		controls.minDistance = 50;
+		// Luz
+		const light = new THREE.HemisphereLight(0xffffff, 0x444444, 4.0); // el tercer parámetro es la intensidad
+		light.position.set(-120, 120, 120);
+		scene.add(light);
+
+		// Cargar modelo GLB
+		const loader = new GLTFLoader();
+		const raycaster = new THREE.Raycaster();
+		const mouse = new THREE.Vector2();
+		const objetosClickeables = []; // Aquí guardarás los nodos (meshes)
+		let objetoSeleccionado = null;
+		let colorOriginal = null;
+
+
+		let partesHuesosMano = null;
+		loader.load(
+			'models/mios/pie.glb',
+			function (gltf) {
+				partesHuesosMano = gltf.scene;
+				partesHuesosMano.scale.set(13.5, 13.5, 13.5);
+				partesHuesosMano.position.set(-150, -390, 0);
+
+				partesHuesosMano.rotation.y = 0.5;
+
+				// Centro del modelo para OrbitControls
+				const box = new THREE.Box3().setFromObject(partesHuesosMano);
+				const center = box.getCenter(new THREE.Vector3());
+
+				controls.target.copy(center);
+				camera.lookAt(center);
+				controls.update();
+				
+
+				scene.add(partesHuesosMano);
+
+				partesHuesosMano.traverse((child) => {
+					if (child.isMesh) {
+						child.material = child.material.clone();
+						child.materialOriginal = child.material.clone();
+						objetosClickeables.push(child);
+						console.log('Nodo encontrado:', child.name, child.type);
+					} else {
+						console.log('Nodo encontrado:', child.name, child.type);
+					}
+				});
+			},
+			function (xhr) {
+				document.getElementById('barra').style.width = (xhr.loaded / xhr.total * 100) + '%';
+				document.getElementById('barra-text').innerHTML = (xhr.loaded / xhr.total * 100).toFixed(2) + '%';	
+				if (xhr.loaded === xhr.total) {
+					setTimeout(() => {
+						document.getElementById('loading-container').style.display = 'none';
+					}, 2000);	
+				}
+			},
+			function (error) {
+				console.error('Error al cargar el modelo .glb', error);
+			}
+		);
+
+		window.addEventListener('click', (event) => {
+			// Si el clic fue dentro del modal, salir
+			if (event.target.closest('.modal-flotante')) {
+				return;
+			}
+
+			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+			mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+			raycaster.setFromCamera(mouse, camera);
+
+			const intersects = raycaster.intersectObjects(objetosClickeables, true);
+
+			if (intersects.length > 0) {
+				const objeto = intersects[0].object;
+				const info = partesHuesosPie.find(parte => parte.id === objeto.name);
+
+				if (objetoSeleccionado){
+					objetoSeleccionado.material = objetoSeleccionado.materialOriginal.clone();
+				}
+
+				// Guardar el nuevo objeto seleccionado
+				objetoSeleccionado = objeto;
+				window.speechSynthesis.cancel();
+				// Guardar el color original solo si es un nuevo objeto
+				colorOriginal = objeto.materialOriginal.clone();
+				objeto.material.color.set(0xff0000);
+				posicionarModalEnPunto();
+				tooltip.style.display = 'none';
+			}
+		});
+
+		function posicionarModalEnPunto() {
+            if (!objetoSeleccionado) return;
+
+            const wp = new THREE.Vector3();
+
+            // Obtener posición global del objeto
+            objetoSeleccionado.getWorldPosition(wp);
+
+            // Convertir a coordenadas de pantalla
+            wp.project(camera);
+
+            const x = (wp.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-wp.y * 0.5 + 0.5) * window.innerHeight;
+
+            const modal = document.getElementById('miModal');
+
+            modal.style.display = 'block';
+            modal.style.position = 'absolute';
+            modal.style.left = `${x}px`;
+            modal.style.top = `${y}px`;
+
+            var info = null;
+            info = partesHuesosPie.find(parte => parte.id === objetoSeleccionado.name);
+            document.getElementById('modal-nombre-texto').innerHTML = info.nombre;
+            document.getElementById('modal-descripcion-texto').innerHTML = info.descripcion;
+            document.getElementById('modal-funciones-texto').innerHTML = info.funciones;
+        }
+
+        function actualizarModal() {
+            if (!objetoSeleccionado) return;
+            // Posición mundial del objeto
+            const posicion = new THREE.Vector3();
+            objetoSeleccionado.getWorldPosition(posicion);
+
+            // Convertir a coordenadas de pantalla
+            posicion.project(camera);
+
+            const x = (posicion.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-posicion.y * 0.5 + 0.5) * window.innerHeight;
+
+            const modal = document.getElementById('miModal');
+            modal.style.left = `${x}px`;
+            modal.style.top = `${y}px`;
+        }
+
+        
+        let objetoHover = null;
+		var tooltip = null;
+		let materialOriginal = null;
+		window.addEventListener('mousemove', (event) => {
+			//verificar si el color es rojo
+			
+			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+			mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+			raycaster.setFromCamera(mouse, camera);
+
+			const intersects = raycaster.intersectObjects(
+				objetosClickeables,
+				true
+			);
+
+			if (!tooltip) {
+				tooltip = document.createElement('div');
+				tooltip.id = 'tooltip';
+				document.body.appendChild(tooltip);
+			}
+
+			if (intersects.length > 0) {
+				const objeto = intersects[0].object;
+				const info = partesHuesosPie.find(
+					parte => parte.id === objeto.name
+				);
+
+				// Si cambió de objeto
+				if (objetoHover !== objeto) {
+					// Restaurar color anterior
+					if (objetoHover && materialOriginal) {
+						if(objetoHover.material.color.getHex() != 0xff0000){
+							objetoHover.material.color.copy(materialOriginal);
+						}
+					}
+					// Guardar color original
+					objetoHover = objeto;
+					materialOriginal = objeto.material.color.clone();
+					// Aplicar gris
+					objeto.material.color.set(0xaaaaaa);
+					tooltip.innerHTML = info?.nombre?.toUpperCase();
+				}
+
+				if(info){
+					tooltip.style.display = 'block';
+					tooltip.style.left = (event.clientX + 15) + 'px';
+					tooltip.style.top = (event.clientY + 15) + 'px';
+				}else{
+					tooltip.style.display = 'none';
+				}
+			} else {
+				// Restaurar último objeto
+				if (objetoHover && materialOriginal ) {
+					if(objetoHover.material.color.getHex() != 0xff0000){
+						objetoHover.material.color.copy(materialOriginal);
+					}
+				}
+				objetoHover = null;
+				materialOriginal = null;
+				tooltip.style.display = 'none';
+			}
+		});
+
+        $('#cerrar-modal').click(function() {
+			window.speechSynthesis.cancel();
+			document.getElementById('miModal').style.display = 'none';
+			if (objetoSeleccionado){
+				objetoSeleccionado.material = objetoSeleccionado.materialOriginal.clone();
+			}
+		});
+
+
+		// Animación
+		function animate() {
+			requestAnimationFrame(animate);
+			controls.update();
+			actualizarModal();
+			renderer.render(scene, camera);
+		}
+		animate();
+
+		// Resize responsive
+		window.addEventListener('resize', () => {
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+		});
+
+
+		const emularScroll = (factor) => {
+			const direccion = new THREE.Vector3();
+			direccion.subVectors(camera.position, controls.target).normalize(); // Dirección de la cámara
+
+			// Calcular nueva posición
+			const nuevaPosicion = camera.position.clone().addScaledVector(direccion, factor);
+
+			// Calcular la nueva distancia a target
+			const distancia = nuevaPosicion.distanceTo(controls.target);
+			console.log(distancia);
+
+			if (factor > 0) {
+				if (distancia < 737) {
+					camera.position.copy(nuevaPosicion);
+					controls.update();
+				}
+			} else {
+				if (distancia > 50) {
+					camera.position.copy(nuevaPosicion);
+					controls.update();
+				}
+			}
+		};
+
+
+		const controlesMovimiento = {
+			acercar: () => emularScroll(-50),
+			alejar: () => emularScroll(50),
+		};
+
+		const controlesRotacion = {
+			rotarX: () => { if (partesHuesosMano) partesHuesosMano.rotation.x += 0.1; },
+			rotarX_neg: () => { if (partesHuesosMano) partesHuesosMano.rotation.x -= 0.1; },
+			rotarY: () => { if (partesHuesosMano) partesHuesosMano.rotation.y += 0.1; },
+			rotarY_neg: () => { if (partesHuesosMano) partesHuesosMano.rotation.y -= 0.1; },
+		};
+
+		const moverCamara = {
+			arriba: () => { camera.position.y += 20; controls.target.y += 20; controls.update(); },
+			abajo: () => { camera.position.y -= 20; controls.target.y -= 20; controls.update(); },
+			izquierda: () => { camera.position.x -= 20; controls.target.x -= 20; controls.update(); },
+			derecha: () => { camera.position.x += 20; controls.target.x += 20; controls.update(); },
+			adelante: () => { camera.position.z -= 20; controls.target.z -= 20; controls.update(); },
+			atras: () => { camera.position.z += 20; controls.target.z += 20; controls.update(); },
+		};
+
+		const gui = new GUI();
+
+		const carpetaMovimiento = gui.addFolder('Mover cámara');
+		carpetaMovimiento.add(controlesMovimiento, 'acercar').name('Acercar <i class="fa-solid fa-plus"></i>');
+		carpetaMovimiento.add(controlesMovimiento, 'alejar').name('Alejar <i class="fa-solid fa-minus"></i>');
+
+		carpetaMovimiento.open();
+
+		const carpetaRotacion = gui.addFolder('Rotar modelo');
+
+		carpetaRotacion.add(controlesRotacion, 'rotarY').name('<i class="fa-solid fa-arrow-left"></i> Rotar');
+		carpetaRotacion.add(controlesRotacion, 'rotarY_neg').name('<i class="fa-solid fa-arrow-right"></i> Rotar');
+		carpetaRotacion.add(controlesRotacion, 'rotarX').name('<i class="fa-solid fa-arrow-up"></i> Rotar');
+		carpetaRotacion.add(controlesRotacion, 'rotarX_neg').name('<i class="fa-solid fa-arrow-down"></i> Rotar');
+
+		carpetaRotacion.open();
+
+		const carpetaMover = gui.addFolder('Mover cámara libre');
+		carpetaMover.add(moverCamara, 'arriba').name('Arriba <i class="fa-solid fa-arrow-up"></i>');
+		carpetaMover.add(moverCamara, 'abajo').name('Abajo <i class="fa-solid fa-arrow-down"></i>');
+		carpetaMover.add(moverCamara, 'izquierda').name('Izquierda <i class="fa-solid fa-arrow-left"></i>');
+		carpetaMover.add(moverCamara, 'derecha').name('Derecha <i class="fa-solid fa-arrow-right"></i>');
+		
+		carpetaMover.open();
+
+		setTimeout(() => {
+			document.getElementsByClassName('title')[0].innerHTML = 'Controles del sistema';
+		}, 500);
+
+
+		document.addEventListener('mousedown', () => {
+			document.body.classList.add('grabbing');
+		});
+
+		document.addEventListener('mouseup', () => {
+			document.body.classList.remove('grabbing');
+		});
+
+		// Por si se suelta el clic fuera del navegador
+		document.addEventListener('mouseleave', () => {
+			document.body.classList.remove('grabbing');
+		});
+
+
+	</script>
+</body>
+
+</html>

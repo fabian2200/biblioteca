@@ -1,0 +1,231 @@
+.lil-gui {
+    position: absolute !important;
+    right: 0 !important;
+    width: 100%;
+}
+
+.children .lil-gui {
+    position: relative !important;
+    width: 100% !important;
+}
+
+#modal-nombre-texto {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #1feec5;
+    text-transform: uppercase;
+    max-width: 80%;
+}
+
+.modal-subtitle {
+    font-size: 25px;
+    font-weight: bold;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    color: #1feec5;
+}
+
+.modal-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    color: var(--bs-modal-color);
+    pointer-events: auto;
+    background-color: #000000db;
+    border: 3px solid white;
+    background-clip: padding-box;
+    border-radius: 21px;
+    padding: 10px;
+    outline: 0;
+    color: white;
+}
+
+#celulaModalClose {
+    color: white;
+    background-color: transparent;
+    border: none;
+    font-size: 31px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #ffffff;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 1px solid white;
+    padding-bottom: 7px;
+    position: absolute;
+    right: 10px;
+    top: 10px;
+}
+
+.modal-text {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+#celulaModalClose2 {
+    color: white;
+    background-color: #dc3545;
+    border: none;
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #ffffff;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    border: 1px solid white;
+    padding-bottom: 7px;
+    position: absolute;
+    right: -5px;
+    top: -6px;
+}
+
+#tab-descripcion, #tab-funciones {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+#modalDescription strong {
+    color: #00e1ff;
+}
+
+.marcador-navegacion {
+    background: rgba(0, 0, 0, 0.75);
+    color: white;
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+    font-size: 12px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0s ease, background 0s ease;
+    box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
+    user-select: none;
+    z-index: 100000000;
+}
+
+.marcador-navegacion:hover {
+    transform: scale(1.15);
+    background: #00a8ff; /* Color azul al pasar el cursor */
+}
+
+/* Tarjeta flotante absoluta */
+.modal-flotante {
+    display: none; 
+    position: absolute;
+    z-index: 1000;
+    background-color: rgba(7, 7, 7, 0.877);
+    padding: 15px;
+    border-radius: 8px;
+    width: 500px;
+    color: white;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3);
+    pointer-events: auto; /* Permite interactuar con el modal */
+    transform: translate(-50%, -100%); /* Centra el modal sobre el punto y lo sube */
+    margin-top: -20px; /* Separación extra del punto */
+}
+
+.modal-flotante button {
+    color: white !important;
+}
+
+/* flecha abajo modal */
+.modal-flotante::after {
+    content: '';
+    position: absolute;
+    bottom: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-top: 12px solid rgba(7, 7, 7, 0.877);
+
+    filter: drop-shadow(0 3px 3px rgba(0,0,0,0.2));
+}
+
+#botones-modal {
+    position: absolute;
+    width: 95%;
+}
+
+#botones-modal span {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#botones-modal span:hover {
+    transform: scale(1.1);
+}
+
+/* El resto del CSS de las pestañas se mantiene igual */
+.pestanas-container { display: flex; border-bottom: 2px solid #ccc; margin-bottom: 10px; }
+.btn-pestana { background: none; border: none; padding: 5px 10px; cursor: pointer; font-size: 14px; }
+.btn-pestana.activa { border-bottom: 3px solid #007bff; font-weight: bold; }
+.contenido-pestana { display: none; }
+.contenido-pestana.activa { display: block; }
+
+a {
+    color: #2983ff;
+}
+
+#tooltip {
+    position: absolute;
+    display: none;
+    padding: 5px 10px;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    border-radius: 5px;
+    font-size: 14px;
+    pointer-events: none;
+    z-index: 1000;
+    white-space: nowrap;
+}
+
+.marcador-navegacion {
+    position: relative;
+    z-index: 1;
+}
+
+.marcador-navegacion:hover {
+    z-index: 9999;
+}
+
+.marcador-navegacion:hover::after {
+    content: attr(data-nombre);
+    position: absolute;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    
+    background: rgba(0,0,0,0.85);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    white-space: nowrap;
+
+    z-index: 10000;
+    pointer-events: none;
+}
+
+.controls-display {
+    font-size: 9px !important;
+    width: 250px !important;
+}

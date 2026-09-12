@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Huesos del pie</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<link type="text/css" rel="stylesheet" href="main.css">
+	<link href="../bootstrap/bootstrap.min.css" rel="stylesheet">
+	<!-- Bootstrap JS (requerido para modales) -->
+	<script src="../bootstrap/bootstrap.bundle.min.js"></script>
+	<link rel="stylesheet" href="../bootstrap/style.css" />
+	<link rel="stylesheet" href="../fontawesome/css/all.min.css">
+	<script src="../jquery-3.7.1.min.js"></script>
+	<link rel="stylesheet" href="css/index.css">
+</head>
+
+<body>
+
+    <div id="miModal" class="modal-flotante">
+		<div class="d-flex justify-content-end align-items-center gap-3" id="botones-modal">
+			<span id="boton-hablar" ><i class="fa-solid fa-volume-high"></i></span>
+			<span class="cerrar-modal" onclick="cerrarModal()"><i style="color: red; font-size: 40px;" class="fa-solid fa-xmark"></i></span>
+		</div>
+        <h3 id="modal-nombre-texto">Cargando...</h3>
+        <!-- Botones de las Pestañas -->
+        <div class="pestanas-container">
+            <button class="btn-pestana activa" onclick="cambiarPestana(event, 'tab-descripcion')">Descripción</button>
+        </div>
+    
+        <!-- Contenido de las Pestañas -->
+        <div id="tab-descripcion" class="contenido-pestana activa">
+            <p id="modal-descripcion-texto">Cargando...</p>
+        </div>
+    </div>
+
+    
+
+	<div id="labels-container"></div>
+
+	<!-- Controls display for spaceship view -->
+	<div id="spaceship-controls" class="controls-display">
+		<div class="controls-title">Controles de la Nave:</div>
+		<div class="controls-container">
+			<div class="control-item">
+				<span class="key-symbol">W</span> Adelante
+			</div>
+			<div class="control-item"><span class="key-symbol">S</span> Atrás</div>
+			<div class="control-item">
+				<span class="key-symbol">A</span> Izquierda
+			</div>
+			<div class="control-item">
+				<span class="key-symbol">D</span> Derecha
+			</div>
+			<div class="control-item"><span class="key-symbol">Q</span> Arriba</div>
+			<div class="control-item"><span class="key-symbol">E</span> Abajo</div>
+			<div class="control-item">
+				<span class="key-symbol">⬆️⬇️⬅️➡️</span> Rotar
+			</div>
+		</div>
+	</div>
+
+    
+	<div id="system-controls" class="controls-display">
+		<div class="controls-title">Controles del Sistema:</div>
+		<div class="control-item">
+			<span class="key-symbol">🖱️</span> Click izquierdo + Arrastrar para rotar cámara
+		</div>
+		<div class="control-item">
+			<span class="key-symbol">🖱️</span> Click derecho + arrastrar para mover el Modelo
+		</div>
+	</div>
+    
+	<div id="container"></div>
+
+	<div id="loading-container">
+		<div class="loading-container-content">
+			<div id="loading-text">Cargando modelo</div>
+			<div class="contenedor" style="position: relative;">
+				<span id="barra-text">0%</span>
+				<div id="barra" class="barra">
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="info" style="font-size: 18px; padding: 8px;">Partes de la lengua</div>
+
+    <script src="./jsm/gsap.min.js"></script>
+	<script src="./js/index.js"></script>
+
+	<script type="importmap">
+        {
+            "imports": {
+                "three": "../build/three.module.js",
+                "three/addons/": "./jsm/"
+            }
+        }
+    </script>
+
+	<script type="module">
+		var partesLengua = [
+            {
+				id: "Empty",
+				nombre: "Parte de la lengua donde se sinte sabor dulce",
+				descripcion: "<p>Es la punta frontal de la lengua y esta parte tiene la función de percibir el sabor dulce de los alimentos y bebidas que se consumen.</p>",
+			},
+			{
+				id: "Empty001",
+				nombre: "Parte de la lengua donde se sinte sabor salado",
+				descripcion: "<p>Se trata de la parte frontal derecha e izquierda de la lengua, y esta parte tiene la función de percibir el sabor salado de los alimentos y bebidas que se consumen.</p>",
+			},
+			{
+				id: "Empty002",
+				nombre: "Parte de la lengua donde se sinte sabor ácido",
+				descripcion: "<p>Se trata de la parte derecha e izquierda de la parte posterior de la lengua, y esta parte tiene la función de percibir el sabor ácido de los alimentos y bebidas que se consumen.</p>",
+			},
+            {
+				id: "Empty003",
+				nombre: "Parte de la lengua donde se sinte sabor amargo",
+				descripcion: "<p>Es la punta posterior de la lengua y esta parte tiene la función de percibir el sabor amargo de los alimentos y bebidas que se consumen.</p>",
+			},
+            {
+				id: "Empty004",
+				nombre: "Papilas",
+				descripcion: "<p>Las papilas son pequeñas proyecciones que recubren la superficie de la lengua. <br> La función de las papilas es permitir que la persona perciba el sabor de los alimentos y bebidas que consume.</p>",
+			},
+			{
+				id: "Empty005",
+				nombre: "Amígdalas",
+				descripcion: "<p>Las amígdalas son dos pequeñas glándulas que se encuentran en la parte posterior de la lengua. <br> La función de las amígdalas es permitir que la persona perciba el sabor de los alimentos y bebidas que consume.</p>",
+			},
+            {
+				id: "Empty006",
+				nombre: "Amígdala lingual",
+				descripcion: "<p>Las amígdalas linguales son un conjunto de células protectoras ubicadas en la parte posterior de la cavidad bucal, en la base de la lengua. <br> Su función es proteger el cuerpo de los gérmenes que pueden ingresar por la boca.</p>",
+			}
+		];
+
+
+		import * as THREE from 'three';
+		import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+		import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+		import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js'
+
+
+		let scene, camera, renderer, controls;
+
+		// Inicializar escena
+		scene = new THREE.Scene();
+		scene.background = new THREE.Color(0x222222);
+		
+		// Cámara
+		camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 5000);
+		camera.position.set(400, 250, 450);
+		camera.updateProjectionMatrix();
+
+
+		// Renderizador
+		renderer = new THREE.WebGLRenderer({ antialias: true });
+		renderer.setSize(window.innerWidth, window.innerHeight);
+		document.body.appendChild(renderer.domElement);
+
+        // --- AÑADE ESTO JUSTO AQUÍ ---
+        let labelRenderer = new CSS2DRenderer();
+        labelRenderer.setSize(window.innerWidth, window.innerHeight);
+        labelRenderer.domElement.style.position = 'absolute';
+        labelRenderer.domElement.style.top = '0px';
+        // Esta línea es crucial para que puedas seguir rotando el modelo 3D 
+        // aunque arrastres el mouse encima de la capa de las etiquetas HTML
+        labelRenderer.domElement.style.pointerEvents = 'none'; 
+        document.body.appendChild(labelRenderer.domElement);
+
+		// Controles orbitales
+		controls = new OrbitControls(camera, renderer.domElement);
+		const distanciaInicial = camera.position.length();
+
+		controls.maxDistance = distanciaInicial;
+		controls.minDistance = 50;
+		// Luz
+		const ambientLight = new THREE.AmbientLight(0xffffff, 2);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 3);
+        directionalLight.position.set(10, 10, 10);
+        scene.add(directionalLight);
+
+		// Cargar modelo GLB
+		const loader = new GLTFLoader();
+		const raycaster = new THREE.Raycaster();
+		const mouse = new THREE.Vector2();
+		const objetosClickeables = []; // Aquí guardarás los nodos (meshes)
+		let objetoSeleccionado = null;
+		let colorOriginal = null;
+		let hotspots = [];
+
+		let modeloLengua = null;
+		function cargarModelo(url) {
+            loader.load(
+                url,
+                function (gltf) {
+
+                    modeloLengua = gltf.scene;
+
+                    // Escala del modelo
+                    modeloLengua.scale.set(5.5, 5.5, 5.5);
+
+                    // Agregar temporalmente a la escena para calcular dimensiones
+                    scene.add(modeloLengua);
+
+                    // Calcular caja envolvente
+                    const box = new THREE.Box3().setFromObject(modeloLengua);
+
+                    // Centro real del modelo
+                    const center = box.getCenter(new THREE.Vector3());
+
+                    // Tamaño del modelo
+                    const size = box.getSize(new THREE.Vector3());
+
+                    // Centrar modelo en el origen
+                    modeloLengua.position.x -= center.x;
+                    modeloLengua.position.y -= center.y;
+                    modeloLengua.position.z -= center.z;
+
+                    // Rotación inicial
+                    modeloLengua.rotation.x = 0.3;
+                    modeloLengua.rotation.y = -0.3;
+                    modeloLengua.rotation.z = 0.02;
+
+
+                    // Recalcular después de mover
+                    const box2 = new THREE.Box3().setFromObject(modeloLengua);
+                    const center2 = box2.getCenter(new THREE.Vector3());
+
+                    // OrbitControls girará alrededor del modelo
+                    controls.target.copy(center2);
+
+                    // Distancia adecuada de cámara
+                    const maxDim = Math.max(size.x, size.y, size.z);
+
+                    camera.position.set(
+                        center2.x + maxDim * 0,
+                        center2.y + maxDim * 0.2,
+                        center2.z + maxDim * 1.0
+                    );
+
+                    camera.lookAt(center2);
+
+                    controls.minDistance = maxDim * 0.5;
+                    controls.maxDistance = maxDim * 5;
+
+                    controls.update();
+
+                    modeloLengua.traverse((child) => {
+
+                        if (child.name.startsWith("Empty")) {
+                            console.log(child.name);
+                            const posicion = child.getWorldPosition(new THREE.Vector3()); 
+
+                            hotspots.push({
+                                id: child.name,
+                                nombre: partesLengua.find(punto => punto.id === child.name).nombre,
+                                titulo: `Anotación ${child.name}`,
+                                marcadorPos: posicion.clone(),
+                                camaraPos: new THREE.Vector3(posicion.x + 3, posicion.y + 2, posicion.z + 4),
+                                targetPos: posicion.clone()
+                            });
+                        }
+                    });
+
+                    crearMarcadoresVisuales();
+                },
+
+                function (xhr) {
+                    if (xhr.total) {
+                        const porcentaje = (xhr.loaded / xhr.total) * 100;
+                        document.getElementById('barra').style.width =  porcentaje + '%';
+                        document.getElementById('barra-text').innerHTML = porcentaje.toFixed(2) + '%';
+
+                        if (xhr.loaded >= xhr.total) {
+                            setTimeout(() => {
+
+                                document.getElementById(
+                                    'loading-container'
+                                ).style.display = 'none';
+
+                            }, 500);
+                        }
+                    }
+                },
+
+                function (error) {
+                    console.error(
+                        'Error al cargar el modelo .glb',
+                        error
+                    );
+                }
+            );
+        }
+
+        cargarModelo('models/mios/lengua.glb');
+
+        function crearMarcadoresVisuales() {
+            var contador = 1;
+            hotspots.forEach((punto, index) => {
+                // Crear elemento HTML
+                const botonElemento = document.createElement('div');
+                botonElemento.className = 'marcador-navegacion';
+                botonElemento.innerText = contador;
+
+                botonElemento.setAttribute('data-nombre', punto.nombre);
+                
+                // --- AÑADE ESTO PARA PODER HACER CLICK EN EL MARCADOR ---
+                botonElemento.style.pointerEvents = 'auto'; 
+
+                // Hacer click en el círculo flotante te lleva a ese punto
+                botonElemento.addEventListener('click', () => {
+                    irAlPunto(index);
+                });
+
+                // Convertir a objeto 3D y posicionar en la coordenada exacta del child
+                const objetoMarcador = new CSS2DObject(botonElemento);
+                objetoMarcador.position.copy(punto.marcadorPos);
+                
+                scene.add(objetoMarcador);
+                contador++;
+            });
+        }
+
+        let puntoActual3D = null; // Guardará el vector 3D del hotspot activo
+
+        function irAlPunto(index) {
+            if (index < 0 || index >= hotspots.length) return;
+            
+            const puntoDestino = hotspots[index];
+            controls.enabled = false;
+            cerrarModal(); // Cerramos cualquier modal abierto previo
+
+            window.gsap.to(camera.position, {
+                x: puntoDestino.camaraPos.x,
+                y: puntoDestino.camaraPos.y,
+                z: puntoDestino.camaraPos.z,
+                duration: 1.5,
+                ease: "power2.inOut"
+            });
+
+            window.gsap.to(controls.target, {
+                x: puntoDestino.targetPos.x,
+                y: puntoDestino.targetPos.y,
+                z: puntoDestino.targetPos.z,
+                duration: 1.5,
+                ease: "power2.inOut",
+                onComplete: () => {
+                    controls.enabled = true; 
+                    
+                    var informacion = partesLengua.find(punto => punto.id === puntoDestino.id);
+                    
+                    if (informacion) {
+                        // Guardamos la posición del target o la posición del objeto 3D real
+                        // Si tienes una propiedad puntoDestino.posicion usa esa, si no, usamos targetPos
+                        puntoActual3D = new THREE.Vector3(
+                            puntoDestino.targetPos.x, 
+                            puntoDestino.targetPos.y, 
+                            puntoDestino.targetPos.z
+                        );
+
+                        abrirModal(informacion.nombre, informacion.descripcion);
+                        posicionarModalEnPunto(); // Posición inicial
+                    }
+                }
+            });
+        }
+
+        function posicionarModalEnPunto() {
+            if (!puntoActual3D) return;
+
+            const wp = puntoActual3D.clone();
+            
+            wp.project(camera);
+
+            const x = (wp.x * .5 + .5) * window.innerWidth;
+            const y = (-(wp.y * .5) + .5) * window.innerHeight;
+
+            const modal = document.getElementById('miModal');
+            modal.style.left = `${x}px`;
+            modal.style.top = `${y}px`;
+        }
+
+        function actualizarInterfaz() {
+            if (document.getElementById('miModal').style.display === 'block') {
+                posicionarModalEnPunto();
+            }
+        }
+     
+        function abrirModal(nombre, descripcion) {
+            document.getElementById('modal-nombre-texto').innerHTML = nombre || 'Sin nombre';
+            document.getElementById('modal-descripcion-texto').innerHTML = descripcion || 'Sin descripción';
+            document.getElementById('miModal').style.display = 'block';
+        }
+
+		function animate() {
+			requestAnimationFrame(animate);
+			controls.update();
+			renderer.render(scene, camera);
+
+            labelRenderer.render(scene, camera);
+		}
+
+		animate();
+
+		// Resize responsive
+		window.addEventListener('resize', () => {
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+		});
+
+
+		const emularScroll = (factor) => {
+			const direccion = new THREE.Vector3();
+			direccion.subVectors(camera.position, controls.target).normalize(); // Dirección de la cámara
+
+			// Calcular nueva posición
+			const nuevaPosicion = camera.position.clone().addScaledVector(direccion, factor);
+
+			// Calcular la nueva distancia a target
+			const distancia = nuevaPosicion.distanceTo(controls.target);
+			console.log(distancia);
+
+			if (factor > 0) {
+				if (distancia < 737) {
+					camera.position.copy(nuevaPosicion);
+					controls.update();
+				}
+			} else {
+				if (distancia > 50) {
+					camera.position.copy(nuevaPosicion);
+					controls.update();
+				}
+			}
+		};
+
+
+		const controlesMovimiento = {
+			acercar: () => emularScroll(-50),
+			alejar: () => emularScroll(50),
+		};
+
+		const controlesRotacion = {
+			rotarX: () => { if (modeloLengua) modeloLengua.rotation.x += 0.1; },
+			rotarX_neg: () => { if (modeloLengua) modeloLengua.rotation.x -= 0.1; },
+			rotarY: () => { if (modeloLengua) modeloLengua.rotation.y += 0.1; },
+			rotarY_neg: () => { if (modeloLengua) modeloLengua.rotation.y -= 0.1; },
+		};
+
+		const moverCamara = {
+			arriba: () => { camera.position.y += 20; controls.target.y += 20; controls.update(); },
+			abajo: () => { camera.position.y -= 20; controls.target.y -= 20; controls.update(); },
+			izquierda: () => { camera.position.x -= 20; controls.target.x -= 20; controls.update(); },
+			derecha: () => { camera.position.x += 20; controls.target.x += 20; controls.update(); },
+			adelante: () => { camera.position.z -= 20; controls.target.z -= 20; controls.update(); },
+			atras: () => { camera.position.z += 20; controls.target.z += 20; controls.update(); },
+		};
+
+		const gui = new GUI();
+
+		const carpetaMovimiento = gui.addFolder('Mover cámara');
+		carpetaMovimiento.add(controlesMovimiento, 'acercar').name('Acercar <i class="fa-solid fa-plus"></i>');
+		carpetaMovimiento.add(controlesMovimiento, 'alejar').name('Alejar <i class="fa-solid fa-minus"></i>');
+
+		carpetaMovimiento.open();
+
+		const carpetaRotacion = gui.addFolder('Rotar modelo');
+
+		carpetaRotacion.add(controlesRotacion, 'rotarY').name('<i class="fa-solid fa-arrow-left"></i> Rotar');
+		carpetaRotacion.add(controlesRotacion, 'rotarY_neg').name('<i class="fa-solid fa-arrow-right"></i> Rotar');
+		carpetaRotacion.add(controlesRotacion, 'rotarX').name('<i class="fa-solid fa-arrow-up"></i> Rotar');
+		carpetaRotacion.add(controlesRotacion, 'rotarX_neg').name('<i class="fa-solid fa-arrow-down"></i> Rotar');
+
+		carpetaRotacion.open();
+
+		const carpetaMover = gui.addFolder('Mover cámara libre');
+		carpetaMover.add(moverCamara, 'arriba').name('Arriba <i class="fa-solid fa-arrow-up"></i>');
+		carpetaMover.add(moverCamara, 'abajo').name('Abajo <i class="fa-solid fa-arrow-down"></i>');
+		carpetaMover.add(moverCamara, 'izquierda').name('Izquierda <i class="fa-solid fa-arrow-left"></i>');
+		carpetaMover.add(moverCamara, 'derecha').name('Derecha <i class="fa-solid fa-arrow-right"></i>');
+		
+		carpetaMover.open();
+
+		setTimeout(() => {
+			document.getElementsByClassName('title')[0].innerHTML = 'Controles del sistema';
+		}, 500);
+
+
+		document.addEventListener('mousedown', () => {
+			document.body.classList.add('grabbing');
+		});
+
+		document.addEventListener('mouseup', () => {
+			document.body.classList.remove('grabbing');
+		});
+
+		// Por si se suelta el clic fuera del navegador
+		document.addEventListener('mouseleave', () => {
+			document.body.classList.remove('grabbing');
+		});
+
+
+	</script>
+</body>
+
+</html>

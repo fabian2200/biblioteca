@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Huesos de la columna vertebral</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<link type="text/css" rel="stylesheet" href="main.css">
+	<link href="../bootstrap/bootstrap.min.css" rel="stylesheet">
+	<!-- Bootstrap JS (requerido para modales) -->
+	<script src="../bootstrap/bootstrap.bundle.min.js"></script>
+	<link rel="stylesheet" href="../bootstrap/style.css" />
+	<link rel="stylesheet" href="../fontawesome/css/all.min.css">
+	<script src="../jquery-3.7.1.min.js"></script>
+	<link rel="stylesheet" href="./css/index.css">
+	<style>
+		a {
+			color: #2983ff;
+		}
+
+		#containerDescripcion {
+			position: absolute;
+			bottom: 10px;
+			left: 10px;
+			width: 200px;
+			height: 140px;
+			background-color: #292929;
+			padding: 10px;
+			border: 1px solid white;
+			color: white;
+			font-size: 15px;
+		}
+
+		.itemColor {
+			display: flex;
+			flex-direction: row;
+			align-items: left;
+			justify-content: left;
+		}
+
+		.colorColumna {
+			width: 20px;
+			height: 20px;
+			margin-right: 10px;
+		}
+	</style>
+</head>
+
+<body>
+
+	<div id="labels-container"></div>
+
+	<!-- Controls display for spaceship view -->
+	<div id="spaceship-controls" class="controls-display">
+		<div class="controls-title">Controles de la Nave:</div>
+		<div class="controls-container">
+			<div class="control-item">
+				<span class="key-symbol">W</span> Adelante
+			</div>
+			<div class="control-item"><span class="key-symbol">S</span> Atrás</div>
+			<div class="control-item">
+				<span class="key-symbol">A</span> Izquierda
+			</div>
+			<div class="control-item">
+				<span class="key-symbol">D</span> Derecha
+			</div>
+			<div class="control-item"><span class="key-symbol">Q</span> Arriba</div>
+			<div class="control-item"><span class="key-symbol">E</span> Abajo</div>
+			<div class="control-item">
+				<span class="key-symbol">⬆️⬇️⬅️➡️</span> Rotar
+			</div>
+		</div>
+	</div>
+
+	<!-- Controls display for system view -->
+	<div id="system-controls" class="controls-display">
+		<div class="controls-title">Controles del Sistema:</div>
+		<div class="control-item">
+			<span class="key-symbol">🖱️</span> Click izquierdo + Arrastrar para rotar cámara
+		</div>
+		<div class="control-item">
+			<span class="key-symbol">🖱️</span> Click derecho + arrastrar para mover el Modelo
+		</div>
+	</div>
+
+
+
+	<!-- Modal de información del planeta -->
+	<div id="miModal" class="modal-flotante">
+		<div class="d-flex justify-content-end align-items-center gap-3" id="botones-modal">
+			<span id="boton-hablar" ><i class="fa-solid fa-volume-high"></i></span>
+			<span class="cerrar-modal" id="cerrar-modal"><i style="color: red; font-size: 40px;" class="fa-solid fa-xmark"></i></span>
+		</div>
+        <h3 id="modal-nombre-texto">Cargando...</h3>
+        <!-- Botones de las Pestañas -->
+        <div class="pestanas-container">
+            <button class="btn-pestana activa" onclick="cambiarPestana(event, 'tab-descripcion')">Descripción</button>
+            <button class="btn-pestana" onclick="cambiarPestana(event, 'tab-funciones')">Funciones</button>
+        </div>
+    
+        <div id="tab-descripcion" class="contenido-pestana activa">
+            <p id="modal-descripcion-texto">Cargando...</p>
+        </div>
+        <div id="tab-funciones" class="contenido-pestana">
+            <p id="modal-funciones-texto">Cargando...</p>
+        </div>
+    </div>
+
+	<div id="container"></div>
+
+	<div id="loading-container">
+		<div class="loading-container-content">
+			<div id="loading-text">Cargando modelo</div>
+			<div class="contenedor" style="position: relative;">
+				<span id="barra-text">0%</span>
+				<div id="barra" class="barra">
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="containerDescripcion">
+		<div class="itemColor">
+			<div class="colorColumna" style="background-color: #b6829c;">	
+			</div>
+			<div class="colorNombre">
+				Vertebras cervicales
+			</div>
+		</div>
+		<div class="itemColor" style="margin-top: 10px;">
+			<div class="colorColumna" style="background-color: #6e98ae;">	
+			</div>
+			<div class="colorNombre">
+				Vertebras toracicas
+			</div>
+		</div>
+		<div class="itemColor" style="margin-top: 10px;">
+			<div class="colorColumna" style="background-color: #6e9f71;">	
+			</div>
+			<div class="colorNombre">
+				Vertebras lumbares
+			</div>
+		</div>
+		<div class="itemColor" style="margin-top: 10px;">
+			<div class="colorColumna" style="background-color: #c3b799;">	
+			</div>
+			<div class="colorNombre">
+				Sacro y Cóccis
+			</div>
+		</div>
+	</div>
+
+
+	<div class="info" style="font-size: 18px; padding: 8px;">Huesos de la columna</div>
+
+
+	<script type="importmap">
+		{
+			"imports": {
+				"three": "../build/three.module.js",
+				"three/addons/": "./jsm/"
+			}
+		}
+	</script>
+
+	<script src="./js/index.js"></script>
+
+	<script type="module">
+		import * as THREE from 'three';
+		import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+		import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+		import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { TransformControls } from 'three/addons/controls/TransformControls.js';
+
+		let scene, camera, renderer, controls, transformControls;
+
+		const vertebras = [
+			{ id: "articulacion_intervertebral", nombre: "Articulación intervertebral", descripcion: "Los cuerpos vertebrales adyacentes están unidos por sínfisis denominadas articulaciones intervertebrales. Las únicas excepciones se presentan a nivel de C1-C2 y más adelante a partir de S2, en donde las no existen sínfisis. Los discos intervertebrales están compuestos por un anillo fibroso externo (annulus fibrosus) que rodea un núcleo pulposo (nucleus pulposus). Su función es la de absorber los impactos, prevenir la fricción y permitir un cierto grado de flexibilidad entre las vértebras. La columna lumbar es la más susceptible a desarrollar hernias discales debido a su localización y a su rol significativo en la carga de peso. Los cuerpos de las vértebras cervicales también se interconectan mediante las articulaciones uncovertebrales" },
+
+			// Cervicales
+			{ id: "c1", nombre: "Atlas (C1)", descripcion: "<p>Primera vértebra cervical, sostiene el cráneo.</p>", funciones: "<p>Sostiene el cráneo y permite el giro de la cabeza.</p>" },
+			{ id: "c2", nombre: "Axis (C2)", descripcion: "<p>Segunda vértebra cervical, permite el giro de la cabeza.</p>", funciones: "<p>Sostiene el cráneo y permite el giro de la cabeza.</p>" },
+			{ id: "c3", nombre: "Vértebra cervical C3", descripcion: "<p>Contribuye al movimiento del cuello.</p>", funciones: "<p>Sostiene el cráneo y permite el giro de la cabeza.</p>" },
+			{ id: "c4", nombre: "Vértebra cervical C4", descripcion: "<p>Ayuda en el soporte y movilidad del cuello.</p>", funciones: "<p>Sostiene el cráneo y permite el giro de la cabeza.</p>" },
+			{ id: "c5", nombre: "Vértebra cervical C5", descripcion: "<p>Soporta el cuello y protege la médula espinal.</p>", funciones: "<p>Sostiene el cráneo y permite el giro de la cabeza.</p>" },
+			{ id: "c6", nombre: "Vértebra cervical C6", descripcion: "<p>Participa en la flexión y extensión del cuello.</p>", funciones: "<p>Sostiene el cráneo y permite el giro de la cabeza.</p>" },
+			{ id: "c7", nombre: "Vértebra cervical C7", descripcion: "<p>Última cervical, prominente en la base del cuello.</p>", funciones: "<p>Sostiene el cráneo y permite el giro de la cabeza.</p>" },
+
+			// Lumbares
+			{ id: "l1", nombre: "Vértebra lumbar L1", descripcion: "<p>Primera vértebra lumbar, soporta el peso del torso.</p>", funciones: "<p>Sostiene el cráneo y permite el giro de la cabeza.</p>" },
+			{ id: "l2", nombre: "Vértebra lumbar L2", descripcion: "<p>Aporta estabilidad y movimiento en la zona lumbar.</p>", funciones: "<p>Sostiene el cráneo y permite el giro de la cabeza.</p>" },
+			{ id: "l3", nombre: "Vértebra lumbar L3", descripcion: "<p>Clave en la movilidad y soporte de la espalda baja.</p>", funciones: "<p>Sostiene el cráneo y permite el giro de la cabeza.</p>" },
+			{ id: "l4", nombre: "Vértebra lumbar L4", descripcion: "<p>Ayuda en la flexión y extensión lumbar.</p>", funciones: "<p>Sostiene el cráneo y permite el giro de la cabeza.</p>" },
+			{ id: "l5", nombre: "Vértebra lumbar L5", descripcion: "<p>Última vértebra lumbar, conecta con el sacro.</p>", funciones: "<p>Sostiene el cráneo y permite el giro de la cabeza.</p>" },
+
+			// Sacro
+			{ id: "sacro", nombre: "Sacro y Cóccis", descripcion: "<p>El <strong>sacro</strong> consiste en cinco vértebras sacras fusionadas. Se localiza entre la columna lumbar (ángulo lumbosacro) y el cóccix, y forma parte de la pelvis. Su función principal es la de transmitir todo el peso de la parte superior del cuerpo a la pelvis hasta llegar a los miembros inferiores. <br><br>El <strong>cóccix</strong> El hueso del cóccix se articula con el sacro y consiste en tres a cuatro vértebras coccígeas fusionadas. Tiene dos caras (pélvica, posterior), procesos transversos cortos y astas coccígeas. El cóccix es un punto de unión para los glúteos mayores y músculos coccígeos. El filum terminal de la médula espinal termina al nivel de la primera vértebra coccígea (Co1).</p>", funciones: "<p>Sostiene el cráneo y permite el giro de la cabeza.</p>" },
+
+			// Torácicas
+			{ id: "t1", nombre: "Vértebra torácica T1", descripcion: "<p>Primera torácica, conecta con la primera costilla.</p>", funciones: "<p>Sostiene el cráneo y permite el giro de la cabeza.</p>" },
+			{ id: "t2", nombre: "Vértebra torácica T2", descripcion: "<p>Soporta y articula con la segunda costilla.</p>", funciones: "<p>Sostiene el cráneo y permite el giro de la cabeza.</p>" },
+			{ id: "t3", nombre: "Vértebra torácica T3", descripcion: "<p>Parte media superior del tórax.</p>", funciones: "<p>Sostiene el cráneo y permite el giro de la cabeza.</p>" },
+			{ id: "t4", nombre: "Vértebra torácica T4", descripcion: "<p>Conecta con la cuarta costilla.</p>", funciones: "<p>Sostiene el cráneo y permite el giro de la cabeza.</p>" },
+			{ id: "t5", nombre: "Vértebra torácica T5", descripcion: "<p>Da soporte al tórax medio.</p>", funciones: "<p>Sostiene el cráneo y permite el giro de la cabeza.</p>" },
+			{ id: "t6", nombre: "Vértebra torácica T6", descripcion: "<p>Zona media torácica, protege órganos internos.</p>", funciones: "<p>Sostiene el cráneo y permite el giro de la cabeza.</p>" },
+			{ id: "t7", nombre: "Vértebra torácica T7", descripcion: "<p>Parte media de la columna torácica.</p>", funciones: "<p>Sostiene el cráneo y permite el giro de la cabeza.</p>" },
+			{ id: "t8", nombre: "Vértebra torácica T8", descripcion: "<p>Articulada con la octava costilla.</p>", funciones: "<p>Sostiene el cráneo y permite el giro de la cabeza.</p>" },
+			{ id: "t9", nombre: "Vértebra torácica T9", descripcion: "<p>Ayuda al soporte del tórax inferior.</p>", funciones: "<p>Sostiene el cráneo y permite el giro de la cabeza.</p>" },
+			{ id: "t10", nombre: "Vértebra torácica T10", descripcion: "<p>Conecta con la décima costilla.</p>", funciones: "<p>Sostiene el cráneo y permite el giro de la cabeza.</p>" },
+			{ id: "t11", nombre: "Vértebra torácica T11", descripcion: "<p>Una de las últimas vértebras torácicas.</p>", funciones: "<p>Sostiene el cráneo y permite el giro de la cabeza.</p>" },
+			{ id: "t12", nombre: "Vértebra torácica T12", descripcion: "<p>Última torácica, transiciona a la región lumbar.</p>", funciones: "<p>Sostiene el cráneo y permite el giro de la cabeza.</p>" }
+		];
+
+
+		// Inicializar escena
+		scene = new THREE.Scene();
+		scene.background = new THREE.Color(0x222222);
+
+		// Cámara
+		camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
+		camera.position.set(100, 50, 200);
+		camera.updateProjectionMatrix();
+
+		// Renderizador
+		renderer = new THREE.WebGLRenderer({ antialias: true });
+		renderer.setSize(window.innerWidth, window.innerHeight);
+		document.body.appendChild(renderer.domElement);
+
+		// Controles orbitales
+		controls = new OrbitControls(camera, renderer.domElement);
+		const distanciaInicial = camera.position.length();
+
+		controls.minDistance = 50;
+		// Luz
+		const light = new THREE.HemisphereLight(0xffffff, 0x444444, 4.0); // el tercer parámetro es la intensidad
+		light.position.set(-120, 120, 120);
+		scene.add(light);
+
+		// Cargar modelo GLB
+		const loader = new GLTFLoader();
+		const raycaster = new THREE.Raycaster();
+		const mouse = new THREE.Vector2();
+		const objetosClickeables = []; // Aquí guardarás los nodos (meshes)
+		let objetoSeleccionado = null;
+		let colorOriginal = null;
+
+
+		let modeloColumna = null;
+		loader.load(
+			'models/mios/columna.glb',
+			function (gltf) {
+				modeloColumna = gltf.scene;
+				modeloColumna.scale.set(4.1, 4.1, 4.1);
+				modeloColumna.position.set(-100, -210, 0);
+
+				modeloColumna.rotation.y = 0.95;
+				modeloColumna.rotation.x = -0.05;
+				modeloColumna.rotation.z = 0.05;
+
+				scene.add(modeloColumna);
+               
+				// Centro del modelo para OrbitControls
+				const box = new THREE.Box3().setFromObject(modeloColumna);
+				const center = box.getCenter(new THREE.Vector3());
+
+				controls.target.copy(center);
+				camera.lookAt(center);
+				controls.update();
+
+				modeloColumna.traverse((child) => {
+					if (child.isMesh) {
+						child.material = child.material.clone();
+						child.materialOriginal = child.material.clone();
+						objetosClickeables.push(child);
+						console.log('Nodo encontrado:', child.name, child.type);
+					} else {
+						console.log('Nodo encontrado:', child.name, child.type);
+					}
+				});
+			},
+			function (xhr) {
+				document.getElementById('barra').style.width = (xhr.loaded / xhr.total * 100) + '%';
+				document.getElementById('barra-text').innerHTML = (xhr.loaded / xhr.total * 100).toFixed(2) + '%';	
+				if (xhr.loaded === xhr.total) {
+					setTimeout(() => {
+						document.getElementById('loading-container').style.display = 'none';
+					}, 2000);	
+				}
+			},
+			function (error) {
+				console.error('Error al cargar el modelo .glb', error);
+			}
+		);
+
+
+		window.addEventListener('click', (event) => {
+			// Si el clic fue dentro del modal, salir
+			if (event.target.closest('.modal-flotante')) {
+				return;
+			}
+
+			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+			mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+			raycaster.setFromCamera(mouse, camera);
+
+			const intersects = raycaster.intersectObjects(objetosClickeables, true);
+
+			if (intersects.length > 0) {
+				const objeto = intersects[0].object;
+				const info = vertebras.find(parte => parte.id === objeto.name);
+
+				if (objetoSeleccionado){
+					objetoSeleccionado.material = objetoSeleccionado.materialOriginal.clone();
+				}
+
+				// Guardar el nuevo objeto seleccionado
+				objetoSeleccionado = objeto;
+				window.speechSynthesis.cancel();
+				// Guardar el color original solo si es un nuevo objeto
+				colorOriginal = objeto.materialOriginal.clone();
+				objeto.material.color.set(0xff0000);
+				posicionarModalEnPunto();
+				tooltip.style.display = 'none';
+			}
+		});
+
+		function posicionarModalEnPunto() {
+            if (!objetoSeleccionado) return;
+
+            const wp = new THREE.Vector3();
+
+            // Obtener posición global del objeto
+            objetoSeleccionado.getWorldPosition(wp);
+
+            // Convertir a coordenadas de pantalla
+            wp.project(camera);
+
+            const x = (wp.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-wp.y * 0.5 + 0.5) * window.innerHeight;
+
+            const modal = document.getElementById('miModal');
+
+            modal.style.display = 'block';
+            modal.style.position = 'absolute';
+            modal.style.left = `${x}px`;
+            modal.style.top = `${y}px`;
+
+            var info = null;
+            info = vertebras.find(parte => parte.id === objetoSeleccionado.name);
+            document.getElementById('modal-nombre-texto').innerHTML = info.nombre;
+            document.getElementById('modal-descripcion-texto').innerHTML = info.descripcion;
+            document.getElementById('modal-funciones-texto').innerHTML = info.funciones;
+        }
+
+        function actualizarModal() {
+            if (!objetoSeleccionado) return;
+            // Posición mundial del objeto
+            const posicion = new THREE.Vector3();
+            objetoSeleccionado.getWorldPosition(posicion);
+
+            // Convertir a coordenadas de pantalla
+            posicion.project(camera);
+
+            const x = (posicion.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-posicion.y * 0.5 + 0.5) * window.innerHeight;
+
+            const modal = document.getElementById('miModal');
+            modal.style.left = `${x}px`;
+            modal.style.top = `${y}px`;
+        }
+
+        
+        let objetoHover = null;
+		var tooltip = null;
+		let materialOriginal = null;
+		window.addEventListener('mousemove', (event) => {
+			//verificar si el color es rojo
+			
+			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+			mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+			raycaster.setFromCamera(mouse, camera);
+
+			const intersects = raycaster.intersectObjects(
+				objetosClickeables,
+				true
+			);
+
+			if (!tooltip) {
+				tooltip = document.createElement('div');
+				tooltip.id = 'tooltip';
+				document.body.appendChild(tooltip);
+			}
+
+			if (intersects.length > 0) {
+				const objeto = intersects[0].object;
+				const info = vertebras.find(
+					parte => parte.id === objeto.name
+				);
+
+				// Si cambió de objeto
+				if (objetoHover !== objeto) {
+					// Restaurar color anterior
+					if (objetoHover && materialOriginal) {
+						if(objetoHover.material.color.getHex() != 0xff0000){
+							objetoHover.material.color.copy(materialOriginal);
+						}
+					}
+					// Guardar color original
+					objetoHover = objeto;
+					materialOriginal = objeto.material.color.clone();
+					// Aplicar gris
+					objeto.material.color.set(0xaaaaaa);
+					tooltip.innerHTML = info?.nombre?.toUpperCase();
+				}
+
+				if(info){
+					tooltip.style.display = 'block';
+					tooltip.style.left = (event.clientX + 15) + 'px';
+					tooltip.style.top = (event.clientY + 15) + 'px';
+				}else{
+					tooltip.style.display = 'none';
+				}
+			} else {
+				// Restaurar último objeto
+				if (objetoHover && materialOriginal ) {
+					if(objetoHover.material.color.getHex() != 0xff0000){
+						objetoHover.material.color.copy(materialOriginal);
+					}
+				}
+				objetoHover = null;
+				materialOriginal = null;
+				tooltip.style.display = 'none';
+			}
+		});
+
+        $('#cerrar-modal').click(function() {
+			window.speechSynthesis.cancel();
+			document.getElementById('miModal').style.display = 'none';
+			if (objetoSeleccionado){
+				objetoSeleccionado.material = objetoSeleccionado.materialOriginal.clone();
+			}
+		});
+
+
+
+		// Animación
+		function animate() {
+			requestAnimationFrame(animate);
+			controls.update();
+			renderer.render(scene, camera);
+		}
+		animate();
+
+		// Resize responsive
+		window.addEventListener('resize', () => {
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+		});
+
+
+		const emularScroll = (factor) => {
+			const direccion = new THREE.Vector3();
+			direccion.subVectors(camera.position, controls.target).normalize(); // Dirección de la cámara
+
+			// Calcular nueva posición
+			const nuevaPosicion = camera.position.clone().addScaledVector(direccion, factor);
+
+			// Calcular la nueva distancia a target
+			const distancia = nuevaPosicion.distanceTo(controls.target);
+			console.log(distancia);
+
+			if (factor > 0) {
+				if (distancia < 737) {
+					camera.position.copy(nuevaPosicion);
+					controls.update();
+				}
+			} else {
+				if (distancia > 50) {
+					camera.position.copy(nuevaPosicion);
+					controls.update();
+				}
+			}
+		};
+
+
+		const controlesMovimiento = {
+			acercar: () => emularScroll(-50),
+			alejar: () => emularScroll(50),
+		};
+
+		const controlesRotacion = {
+			rotarX: () => { if (modeloColumna) modeloColumna.rotation.x += 0.1; },
+			rotarX_neg: () => { if (modeloColumna) modeloColumna.rotation.x -= 0.1; },
+			rotarY: () => { if (modeloColumna) modeloColumna.rotation.y += 0.1; },
+			rotarY_neg: () => { if (modeloColumna) modeloColumna.rotation.y -= 0.1; },
+		};
+
+		const moverCamara = {
+			arriba: () => { camera.position.y += 20; controls.target.y += 20; controls.update(); },
+			abajo: () => { camera.position.y -= 20; controls.target.y -= 20; controls.update(); },
+			izquierda: () => { camera.position.x -= 20; controls.target.x -= 20; controls.update(); },
+			derecha: () => { camera.position.x += 20; controls.target.x += 20; controls.update(); },
+			adelante: () => { camera.position.z -= 20; controls.target.z -= 20; controls.update(); },
+			atras: () => { camera.position.z += 20; controls.target.z += 20; controls.update(); },
+		};
+
+		const gui = new GUI();
+
+		const carpetaMovimiento = gui.addFolder('Mover cámara');
+		carpetaMovimiento.add(controlesMovimiento, 'acercar').name('Acercar <i class="fa-solid fa-plus"></i>');
+		carpetaMovimiento.add(controlesMovimiento, 'alejar').name('Alejar <i class="fa-solid fa-minus"></i>');
+
+		carpetaMovimiento.open();
+
+		const carpetaRotacion = gui.addFolder('Rotar modelo');
+
+		carpetaRotacion.add(controlesRotacion, 'rotarY').name('<i class="fa-solid fa-arrow-left"></i> Rotar');
+		carpetaRotacion.add(controlesRotacion, 'rotarY_neg').name('<i class="fa-solid fa-arrow-right"></i> Rotar');
+		carpetaRotacion.add(controlesRotacion, 'rotarX').name('<i class="fa-solid fa-arrow-up"></i> Rotar');
+		carpetaRotacion.add(controlesRotacion, 'rotarX_neg').name('<i class="fa-solid fa-arrow-down"></i> Rotar');
+
+		carpetaRotacion.open();
+
+		const carpetaMover = gui.addFolder('Mover cámara libre');
+		carpetaMover.add(moverCamara, 'arriba').name('Arriba <i class="fa-solid fa-arrow-up"></i>');
+		carpetaMover.add(moverCamara, 'abajo').name('Abajo <i class="fa-solid fa-arrow-down"></i>');
+		carpetaMover.add(moverCamara, 'izquierda').name('Izquierda <i class="fa-solid fa-arrow-left"></i>');
+		carpetaMover.add(moverCamara, 'derecha').name('Derecha <i class="fa-solid fa-arrow-right"></i>');
+		
+		carpetaMover.open();
+
+		setTimeout(() => {
+			document.getElementsByClassName('title')[0].innerHTML = 'Controles del sistema';
+		}, 500);
+
+
+		document.addEventListener('mousedown', () => {
+			document.body.classList.add('grabbing');
+		});
+
+		document.addEventListener('mouseup', () => {
+			document.body.classList.remove('grabbing');
+		});
+
+		// Por si se suelta el clic fuera del navegador
+		document.addEventListener('mouseleave', () => {
+			document.body.classList.remove('grabbing');
+		});
+
+
+	</script>
+</body>
+
+</html>

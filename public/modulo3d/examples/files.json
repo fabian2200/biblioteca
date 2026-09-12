@@ -1,0 +1,26 @@
+{
+	"Modelos 3D": [
+		"webgl_Celula_Animal",
+		"webgl_Celula_Vegetal",
+		"webgl_Sistema_Solar",
+		"webgl_Molecula_ADN",
+		"webgl_Sistema_Digestivo",
+		"webgl_Sistema_reproductor_masculino",
+		"webgl_Sistema_reproductor_femenino",
+		"webgl_Sistema_Targumentario",
+		"webgl_Sistema_Circulatorio",
+		"webgl_Partes_del_oido",
+		"webgl_Partes_del_ojo",
+		"webgl_Partes_de_la_lengua",
+		"webgl_Anatomia_de_la_nariz",
+		"webgl_Sistema_muscular",
+		"webgl_Anatomia_del_corazon"
+	],
+	"Sistema Oseo": [
+		"webgl_Sistema_Oseo",
+		"webgl_Huesos_de_la_Mano",
+		"webgl_Huesos_del_pie",
+		"webgl_Huesos_de_la_Columna_Vertebral",
+		"webgl_Huesos_del_craneo"
+	]
+}
