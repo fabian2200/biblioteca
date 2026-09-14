@@ -30,7 +30,7 @@ export async function corregirCadena(textoOriginal) {
     //return http().get('/api/corregir-cadena?cadena=' + textoOriginal);
 
     try {
-        const respuesta = await axios.post('http://192.168.1.66:9000/corregir', {
+        const respuesta = await axios.post('http://192.168.1.20:9000/corregir', {
           texto: textoOriginal
         });
 
