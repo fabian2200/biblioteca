@@ -2,18 +2,15 @@
 
 namespace App\Http\Controllers;
 use Illuminate\Database\Eloquent\Model;
-use Jenssegers\Mongodb\Connection;
 use MongoDB\Client;
 use Illuminate\Http\Request;
 use DB;
-
-use Jenssegers\Mongodb\Facades\MongoDB;
 
 use Illuminate\Support\Facades\Session;
 use PDF;
 use Illuminate\Http\Response;
 
-require 'conexion.php';
+require_once 'conexion.php';
 
 class ExportarController extends Controller
 {
@@ -45,6 +42,10 @@ class ExportarController extends Controller
                 '_id' => new \MongoDB\BSON\ObjectID($id),
             ]
         );
+
+        if (!$apunte) {
+            return response()->json(['error' => 'Apunte no encontrado'], 404);
+        }
 
         $data = [
             'titulo' => $request->input('titulo'),

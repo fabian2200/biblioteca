@@ -2,15 +2,13 @@
 
 namespace App\Http\Controllers;
 use Illuminate\Database\Eloquent\Model;
-use Jenssegers\Mongodb\Connection;
 use MongoDB\Client;
 use Illuminate\Http\Request;
 use DB;
-use Jenssegers\Mongodb\Facades\MongoDB;
 use Illuminate\Support\Facades\Session;
 use Carbon\Carbon;
 
-require 'conexion.php';
+require_once 'conexion.php';
 
 class FavoritosController extends Controller
 {

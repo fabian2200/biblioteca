@@ -10,9 +10,7 @@ use HTMLPurifier;
 use HTMLPurifier_Config;
 use DOMDocument;
 
-use Jenssegers\Mongodb\Connection;
 use MongoDB\Client;
-use Jenssegers\Mongodb\Facades\MongoDB;
 use Carbon\Carbon;
 
 class ImagenController extends Controller
@@ -49,7 +47,7 @@ class ImagenController extends Controller
     }
 
     function reducirImagenesBase64($html) {
-        if(strlen($html) > 0){
+        if(strlen($html ?? '') > 0){
 
             $dom = new \DOMDocument();
             libxml_use_internal_errors(true);

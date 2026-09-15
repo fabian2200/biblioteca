@@ -2,12 +2,9 @@
 
 namespace App\Http\Controllers;
 use Illuminate\Database\Eloquent\Model;
-use Jenssegers\Mongodb\Connection;
 use MongoDB\Client;
 use Illuminate\Http\Request;
 use DB;
-
-use Jenssegers\Mongodb\Facades\MongoDB;
 
 use HTMLPurifier;
 use HTMLPurifier_Config;
@@ -16,10 +13,10 @@ use Illuminate\Support\Str;
 
 use Smalot\PdfParser\Parser;
 
-use Goutte\Client as GoutteClient;
+use GuzzleHttp\Client as HttpClient;
 
 
-require 'conexion.php';
+require_once 'conexion.php';
 
 class DiccionarioController extends Controller{
 
@@ -166,7 +163,7 @@ class DiccionarioController extends Controller{
         $bandera = false;
 
         foreach ($palabras as $palabra) {
-            if(strlen($palabra) > 2){
+            if(strlen($palabra ?? '') > 2){
                 $palabra = mb_strtolower($palabra, 'UTF-8');
                 // Comprobar si ya hemos buscado esta palabra antes
                 if (isset($cache[$palabra])) {
@@ -302,7 +299,7 @@ class DiccionarioController extends Controller{
                 "mensaje_opcional" => $mensaje_opcional,
                 "significado" => $significado,
                 "bandera" => $bandera,
-                "imagenes" => $palabra_encontrada->imagenes,
+                "imagenes" => $palabra_encontrada->imagenes ?? [],
                 "sugerencias" => $bandera2 == true ?  $palabra_similar[1] : []
             ];
         }else{
@@ -392,11 +389,13 @@ class DiccionarioController extends Controller{
         foreach ($palabra_encontrada as $documento) {
             $query = $documento->palabra;
 
-            $client = new GoutteClient();
-    
-            $crawler = $client->request('GET', 'https://www.google.com/search?q=' . $query . '&tbm=isch&tbs=isz:ex,iszw:400,iszh:400');
-    
-            $htmlContent = $crawler->html();
+            $client = new HttpClient([
+                'timeout' => 20,
+                'http_errors' => false,
+                'headers' => ['User-Agent' => 'Mozilla/5.0'],
+            ]);
+
+            $htmlContent = (string) $client->get('https://www.google.com/search?q=' . urlencode((string) $query) . '&tbm=isch&tbs=isz:ex,iszw:400,iszh:400')->getBody();
           
             $dom = new \DOMDocument();
             $dom->loadHTML($htmlContent);
@@ -443,11 +442,13 @@ class DiccionarioController extends Controller{
 
             $query = $documento->descripcion;
 
-            $client = new GoutteClient();
-    
-            $crawler = $client->request('GET', 'https://www.google.com/search?q=' . $query . '&tbm=isch&tbs=isz:ex,iszw:400,iszh:400');
-    
-            $htmlContent = $crawler->html();
+            $client = new HttpClient([
+                'timeout' => 20,
+                'http_errors' => false,
+                'headers' => ['User-Agent' => 'Mozilla/5.0'],
+            ]);
+
+            $htmlContent = (string) $client->get('https://www.google.com/search?q=' . urlencode((string) $query) . '&tbm=isch&tbs=isz:ex,iszw:400,iszh:400')->getBody();
           
             $dom = new \DOMDocument();
             $dom->loadHTML($htmlContent);

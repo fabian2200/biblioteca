@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers;
 use Illuminate\Database\Eloquent\Model;
-use Jenssegers\Mongodb\Connection;
 use MongoDB\Client;
 use Illuminate\Http\Request;
 use DB;
-use Jenssegers\Mongodb\Facades\MongoDB;
 use Illuminate\Support\Facades\Session;
 use Carbon\Carbon;
 
@@ -15,7 +13,7 @@ use HTMLPurifier_Config;
 
 use Illuminate\Support\Str;
 
-require 'conexion.php';
+require_once 'conexion.php';
 
 class MongoController extends Controller
 {
@@ -236,10 +234,11 @@ class MongoController extends Controller
 
                 foreach($resultados as $item){
                     if($item->datos->tipo_contenido =="N"){
-                        $item->datos->cont_documento = self::$mongoDB->selectCollection('cont_documento')->findOne(['id' => $item->datos->id_contenido])->cont_documento;
+                        $documento = self::$mongoDB->selectCollection('cont_documento')->findOne(['id' => $item->datos->id_contenido]);
                     }else{
-                        $item->datos->cont_documento = self::$mongoDB->selectCollection('cont_documento_modulos')->findOne(['id' => $item->datos->id_contenido])->cont_documento;
+                        $documento = self::$mongoDB->selectCollection('cont_documento_modulos')->findOne(['id' => $item->datos->id_contenido]);
                     }
+                    $item->datos->cont_documento = $documento->cont_documento ?? null;
                 }
                 
        
@@ -336,8 +335,8 @@ class MongoController extends Controller
                     ]
                 );
 
-                $key->contenido_busqueda->id_original = $contenido_doc->id;
-                $key->contenido_busqueda->parrafo = self::obtenerPrimerParrafoLargo2($contenido_doc->cont_documento);
+                $key->contenido_busqueda->id_original = $contenido_doc->id ?? null;
+                $key->contenido_busqueda->parrafo = self::obtenerPrimerParrafoLargo2($contenido_doc->cont_documento ?? '');
             }else{
                 
                 $collection2 = self::$mongoDB->selectCollection('cont_documento_modulos');
@@ -348,8 +347,8 @@ class MongoController extends Controller
                     ]
                 );
 
-                $key->contenido_busqueda->id_original = $contenido_doc->id;
-                $key->contenido_busqueda->parrafo = self::obtenerPrimerParrafoLargo2($contenido_doc->cont_documento);
+                $key->contenido_busqueda->id_original = $contenido_doc->id ?? null;
+                $key->contenido_busqueda->parrafo = self::obtenerPrimerParrafoLargo2($contenido_doc->cont_documento ?? '');
             }
         }
 

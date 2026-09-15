@@ -2,12 +2,9 @@
 
 namespace App\Http\Controllers;
 use Illuminate\Database\Eloquent\Model;
-use Jenssegers\Mongodb\Connection;
 use MongoDB\Client;
 use Illuminate\Http\Request;
 use DB;
-
-use Jenssegers\Mongodb\Facades\MongoDB;
 
 use Illuminate\Support\Facades\Session;
 
@@ -16,7 +13,7 @@ use HTMLPurifier_Config;
 
 use Illuminate\Support\Str;
 
-require 'conexion.php';
+require_once 'conexion.php';
 
 class AdminController extends Controller
 {
@@ -306,7 +303,7 @@ class AdminController extends Controller
     }
 
     function obtenerPrimeraImagen($html){
-        if(strlen($html) > 0){
+        if(strlen($html ?? '') > 0){
             $dom = new \DOMDocument();
             libxml_use_internal_errors(true);
             $dom->loadHTML($html);
@@ -937,7 +934,7 @@ class AdminController extends Controller
         $words = explode(' ', $textoCompleto);
         
         $filteredWords = array_filter($words, function ($word) {
-            return strlen($word) > 3 && preg_match('/^[A-Za-z]+$/', $word);
+            return strlen($word ?? '') > 3 && preg_match('/^[A-Za-z]+$/', $word);
         });
 
         $wordCounts = collect($filteredWords)->countBy()->toArray();

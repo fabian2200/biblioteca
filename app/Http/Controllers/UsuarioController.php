@@ -2,16 +2,13 @@
 
 namespace App\Http\Controllers;
 use Illuminate\Database\Eloquent\Model;
-use Jenssegers\Mongodb\Connection;
 use MongoDB\Client;
 use Illuminate\Http\Request;
 use DB;
 
-use Jenssegers\Mongodb\Facades\MongoDB;
-
 use Illuminate\Support\Facades\Session;
 
-require 'conexion.php';
+require_once 'conexion.php';
 
 class UsuarioController extends Controller
 {

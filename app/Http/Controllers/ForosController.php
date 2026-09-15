@@ -2,16 +2,13 @@
 
 namespace App\Http\Controllers;
 use Illuminate\Database\Eloquent\Model;
-use Jenssegers\Mongodb\Connection;
 use MongoDB\Client;
 use Illuminate\Http\Request;
 use DB;
 
-use Jenssegers\Mongodb\Facades\MongoDB;
-
 use Illuminate\Support\Facades\Session;
 
-require 'conexion.php';
+require_once 'conexion.php';
 
 class ForosController extends Controller
 {
@@ -143,7 +140,7 @@ class ForosController extends Controller
             $comentario->respuestas = $respuestas;
         }
 
-        $comentarios = $foro->comentarios;
+        $comentarios = $foro->comentarios ?? [];
         if(count($comentarios) > 0){
             $comentarios = iterator_to_array($foro['comentarios']);
             usort($comentarios, function($a, $b) {
@@ -389,7 +386,7 @@ class ForosController extends Controller
             $comentario->respuestas = $respuestas;
         }
 
-        $comentarios = $foro->comentarios;
+        $comentarios = $foro->comentarios ?? [];
         if(count($comentarios) > 0){
             $comentarios = iterator_to_array($foro['comentarios']);
             usort($comentarios, function($a, $b) {

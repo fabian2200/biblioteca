@@ -2,19 +2,16 @@
 
 namespace App\Http\Controllers;
 use Illuminate\Database\Eloquent\Model;
-use Jenssegers\Mongodb\Connection;
 use MongoDB\Client;
 use Illuminate\Http\Request;
 use DB;
-
-use Jenssegers\Mongodb\Facades\MongoDB;
 
 use HTMLPurifier;
 use HTMLPurifier_Config;
 
 use Illuminate\Support\Str;
 
-require 'conexion.php';
+require_once 'conexion.php';
 
 class DatosController extends Controller
 {
@@ -103,7 +100,7 @@ class DatosController extends Controller
     }
 
     function obtenerPrimeraImagen($html){
-        if(strlen($html) > 0){
+        if(strlen($html ?? '') > 0){
             $dom = new \DOMDocument();
             libxml_use_internal_errors(true);
             $dom->loadHTML($html);

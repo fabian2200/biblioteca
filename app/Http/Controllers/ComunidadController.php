@@ -2,12 +2,9 @@
 
 namespace App\Http\Controllers;
 use Illuminate\Database\Eloquent\Model;
-use Jenssegers\Mongodb\Connection;
 use MongoDB\Client;
 use Illuminate\Http\Request;
 use DB;
-
-use Jenssegers\Mongodb\Facades\MongoDB;
 
 use HTMLPurifier;
 use HTMLPurifier_Config;
@@ -15,7 +12,7 @@ use HTMLPurifier_Config;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Session;
 
-require 'conexion.php';
+require_once 'conexion.php';
 
 class ComunidadController extends Controller
 {
@@ -91,7 +88,7 @@ class ComunidadController extends Controller
 
         $publicacion = $publicacion[0];
 
-        if(in_array($idUsuario, json_decode(json_encode($publicacion->likes)))){
+        if(in_array($idUsuario, json_decode(json_encode($publicacion->likes ?? []), true) ?: [])){
             $publicacion->like = true;
         }else{
             $publicacion->like = false;
@@ -101,7 +98,7 @@ class ComunidadController extends Controller
             '_id' => new \MongoDB\BSON\ObjectID($publicacion->id_usuario),
         ]);
 
-        $comentarios = $publicacion->comentarios;
+        $comentarios = $publicacion->comentarios ?? [];
         if(count($comentarios) > 0){
             $comentarios = iterator_to_array($publicacion['comentarios']);
             usort($comentarios, function($a, $b) {
@@ -154,7 +151,7 @@ class ComunidadController extends Controller
             $comentario->fechaFormateada = $fechaFormateada;
 
             
-            if(in_array($idUsuario, json_decode(json_encode($comentario->likes)))){
+            if(in_array($idUsuario, json_decode(json_encode($comentario->likes ?? []), true) ?: [])){
                 $comentario->like_usuario = 1;
             }else{
                 $comentario->like_usuario = 0;
@@ -206,7 +203,7 @@ class ComunidadController extends Controller
         $idUsuario = (string) Session::get('id');
 
         foreach ($publicaciones as $publicacion) {
-            if(in_array($idUsuario, json_decode(json_encode($publicacion->likes)))){
+            if(in_array($idUsuario, json_decode(json_encode($publicacion->likes ?? []), true) ?: [])){
                 $publicacion->like = true;
             }else{
                 $publicacion->like = false;
@@ -216,7 +213,7 @@ class ComunidadController extends Controller
                 '_id' => new \MongoDB\BSON\ObjectID($publicacion->id_usuario),
             ]);
 
-            $comentarios = $publicacion->comentarios;
+            $comentarios = $publicacion->comentarios ?? [];
             if(count($comentarios) > 0){
                 $comentarios = iterator_to_array($publicacion['comentarios']);
                 usort($comentarios, function($a, $b) {
@@ -269,7 +266,7 @@ class ComunidadController extends Controller
                 $comentario->fechaFormateada = $fechaFormateada;
 
                 
-                if(in_array($idUsuario, json_decode(json_encode($comentario->likes)))){
+                if(in_array($idUsuario, json_decode(json_encode($comentario->likes ?? []), true) ?: [])){
                     $comentario->like_usuario = 1;
                 }else{
                     $comentario->like_usuario = 0;
@@ -585,7 +582,7 @@ class ComunidadController extends Controller
             $index++;
         }
               
-        $likesArray = json_decode(json_encode($comentario->likes), true);
+        $likesArray = json_decode(json_encode($comentario->likes ?? []), true) ?: [];
         $keyInArray = array_search($idUsuario, $likesArray);
 
         if ($keyInArray !== false) {

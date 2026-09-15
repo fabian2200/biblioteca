@@ -270,11 +270,13 @@
                                 src="{{ asset('img/letras.png') }}" height="40"></a>
                     </ul>
                     <ul class="nav navbar-nav float-right">
+                        <!--
                         <li class="nav-item" style="display: flex; justify-content: center; align-items: center; margin-right: 20px">
                             <a target="_blank" style="padding: 0.6rem 0.8rem 0.6rem 0.9rem" class="nav-link nav-link-label btn btn-warning2" href="{{ $url_juegos }}">
                                 <i class="fas fa-gamepad"></i> Juegos
                             </a>
                         </li>
+                        -->
                         <li class="dropdown dropdown-user nav-item btn btn-warning" style="display: flex;justify-content: center;align-items: center;margin-right: 14px;padding: 0px;height: 37px;margin-top: 9px;">
                             <a class="dropdown-toggle nav-link dropdown-user-link" href="#"
                                 data-toggle="dropdown">
@@ -813,11 +815,12 @@
                     <p style="font-size: 20px; color: #009199; font-style: italic;" id="mensaje_opcional"></p>
                     <p style="font-size: 20px; max-height: 225px;; font-size: 20px;overflow-y: auto;" id="definicion"></p>
                     <hr>
+                    @if(isset($imagenes) && count($imagenes) > 0)
                     <strong style='font-style: italic; font-size: 20px'>Imagenes relacionadas</strong><br>
-                    <div id="imagenes_palabra"
-                        style="display: flex; justify-content: space-around; align-items: center">
+                    <div id="imagenes_palabra" style="display: flex; justify-content: space-around; align-items: center">
 
                     </div>
+                    @endif
                 </div>
             </div>
         </div>

@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\BusquedaController;
 use App\Http\Controllers\ImagenController;
 use App\Http\Controllers\MongoController;
 use App\Http\Controllers\UsuarioController;

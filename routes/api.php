@@ -19,18 +19,15 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::group(['middleware' => 'cors'], function () {
-    Route::get('/verificar-conexion', function () {
-        $url = 'https://www.ejemplo.com';
-        $connected = @file_get_contents($url);
-      
-        
-        if ($connected) {
-            return response()->json(['message' => 'Conexión exitosa'], 200);
-        } else {
-            return response()->json(['message' => 'No se pudo conectar'], 400);
-        }
-    });
+Route::get('/verificar-conexion', function () {
+    $url = 'https://www.ejemplo.com';
+    $connected = @file_get_contents($url);
+
+    if ($connected) {
+        return response()->json(['message' => 'Conexión exitosa'], 200);
+    }
+
+    return response()->json(['message' => 'No se pudo conectar'], 400);
 });
 
 

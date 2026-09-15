@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 
-require 'conexion.php';
+require_once 'conexion.php';
 
 class PalabrasBDController extends Controller
 {
