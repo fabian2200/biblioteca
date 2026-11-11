@@ -489,9 +489,11 @@ export default {
                     this.contenido_html = this.datos.cont_documento;
                     this.loading = false;
                     this.verificarFavorito();
+                    /*
                     setTimeout(()=>{
                         this.cargarContextoTexto();
                     }, 1000);
+                    */
                 });
             } catch (error) {
                 console.log(error);
