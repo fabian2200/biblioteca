@@ -29,10 +29,10 @@
                                                 class="feather icon-search"></i> Buscar</button>
                                         <div class="btn-group mr-1" style="margin-left: 10px">
                                             <select id="tipoBusqueda" name="tipoBusqueda" style="width: 208px;    background-color: #fc4f00 !important;width: 208px;border-color: #fc4f00 !important;" class="btn btn-warning">
-                                                <option class="text-left" value="contenido"><i class="feather icon-globe"></i> Buscar Contenido</option>
-                                                <option class="text-left" value="imagenes"><i class="fa fa-file-image-o"></i> Buscar Imagenes</option>
-                                                <option class="text-left" value="videos"><i class="feather icon-video"></i> Buscar Videos</option>
-                                                <option class="text-left" value="metafactos"><i class="feather icon-video"></i> Buscar Mentefactos</option>
+                                                <option class="text-left" value="contenido">Buscar Contenido</option>
+                                                <option class="text-left" value="imagenes">Buscar Imagenes</option>
+                                                <option class="text-left" value="videos">Buscar Videos</option>
+                                                <option class="text-left" value="metafactos">Buscar Mentefactos</option>
                                             </select>
                                         </div>
                                     </div>

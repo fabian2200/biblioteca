@@ -30,8 +30,8 @@ export async function corregirCadena(textoOriginal) {
     //return http().get('/api/corregir-cadena?cadena=' + textoOriginal);
 
     try {
-        const respuesta = await axios.post('http://127.0.0.1:9000/corregir', {
-          texto: textoOriginal
+        const respuesta = await axios.post('http://192.168.1.80:9000/corregir', {
+            texto: textoOriginal
         });
 
         if (respuesta.data.texto_corregido !== textoOriginal) {
@@ -43,7 +43,7 @@ export async function corregirCadena(textoOriginal) {
                     success: true
                 }
             }
-        }else{
+        } else {
             console.log("Texto Original es el mismo que el corregido:", textoOriginal);
             return {
                 data: {
